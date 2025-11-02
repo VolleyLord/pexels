@@ -17,9 +17,10 @@ class GetPhotoDetailUseCase @Inject constructor(
    * Fetches the details of a photo by its ID.
    *
    * @param photoId The ID of the photo to retrieve.
+   * @param isFromBookmarks Whether the photo is being loaded from bookmarks (database).
    * @return A [Flow] emitting a [NetworkResult] containing the [Photo] or an error.
    */
-  operator fun invoke(photoId: Int): Flow<NetworkResult<Photo>> {
-    return photosRepository.getPhotoDetail(photoId)
+  operator fun invoke(photoId: Int, isFromBookmarks: Boolean = false): Flow<NetworkResult<Photo>> {
+    return photosRepository.getPhotoDetail(photoId, isFromBookmarks)
   }
 }
