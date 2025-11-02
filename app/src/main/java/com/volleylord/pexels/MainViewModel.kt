@@ -37,7 +37,15 @@ class MainViewModel @Inject constructor(
   private fun initializeApp() {
     viewModelScope.launch {
       seedInitialApiKeyUseCase()
-      _uiState.value = MainUiState.Ready(PhotoListDestination)
+      // Не переключаем состояние сразу - ждем когда Splash Screen загрузит данные
     }
+  }
+
+  /**
+   * Called when splash screen has finished loading initial data.
+   * Transitions the app to ready state and navigates to home screen.
+   */
+  fun onSplashReady() {
+    _uiState.value = MainUiState.Ready(PhotoListDestination)
   }
 }

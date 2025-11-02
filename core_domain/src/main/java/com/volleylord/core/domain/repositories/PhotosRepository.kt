@@ -29,7 +29,8 @@ interface PhotosRepository {
    * Retrieves details of a specific photo by its ID.
    *
    * @param photoId The ID of the photo to retrieve.
+   * @param isFromBookmarks Whether to load from database (bookmarks) instead of network.
    * @return A [Flow] emitting a [NetworkResult] containing the [Photo] or an error.
    */
-  fun getPhotoDetail(photoId: Int): Flow<NetworkResult<Photo>>
+  fun getPhotoDetail(photoId: Int, isFromBookmarks: Boolean = false): Flow<NetworkResult<Photo>>
 }
