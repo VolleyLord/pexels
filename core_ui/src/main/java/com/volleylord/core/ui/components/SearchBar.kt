@@ -1,16 +1,12 @@
 package com.volleylord.core.ui.components
 
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,7 +18,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.volleylord.core.ui.theme.Dark
 import com.volleylord.core.ui.theme.Gray
 import com.volleylord.core.ui.theme.LightGray
@@ -32,11 +31,11 @@ import com.volleylord.core.ui.theme.Shapes
 
 /**
  * Search bar component matching Figma design specifications.
- *
  * @param query The current search query text.
  * @param onQueryChange Callback when the search query changes.
  * @param placeholder The placeholder text to display when the field is empty.
  * @param modifier Modifier to be applied to the search bar.
+ * @param searchIconResId Resource ID (search_bar_icon).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,69 +43,72 @@ fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
     placeholder: String = "Search",
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    searchIconResId: Int = android.R.drawable.ic_menu_search
 ) {
+    val configuration = LocalConfiguration.current
+
+    val baseScreenWidth = 375
+    val baseSearchBarHeight = 50
+    val baseIconSize = 16
+
+    val screenWidth = configuration.screenWidthDp
+    val scale = screenWidth.toFloat() / baseScreenWidth
+
+    val searchBarHeight = (baseSearchBarHeight * scale).dp
+    val iconSize = (baseIconSize * scale).dp
+
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
         modifier = modifier
             .fillMaxWidth()
-            .height(ComponentSizes.searchBarHeight), // fixed height
+            .height(searchBarHeight),
         placeholder = {
             Text(
                 text = placeholder,
-                style = MaterialTheme.typography.bodyMedium,
-                color = Gray // 0xFF868686 из Figma
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontSize = (14 * scale).sp,
+                    letterSpacing = (0.28 * scale).sp
+                ),
+                color = Gray
             )
         },
         leadingIcon = {
-            Box(
-                modifier = Modifier
-                    .size(ComponentSizes.searchIconSize)
-                    .border(
-                        width = ComponentSizes.searchIconBorderWidth,
-                        color = PrimaryRed,
-                        shape = RoundedCornerShape(2.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search",
-                    modifier = Modifier.size(12.dp),
-                    tint = PrimaryRed
+            Image(
+                painter = painterResource(id = searchIconResId),
+                contentDescription = "Search",
+                modifier = Modifier.size(iconSize)
+            )
+        },
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                IconButton(
+                    onClick = { onQueryChange("") }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = "Clear",
+                        tint = Gray
+                    )
+                }
+            }
+        },
+        singleLine = true,
+        shape = RoundedCornerShape(Shapes.medium),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = LightGray,
+            unfocusedContainerColor = LightGray,
+            focusedBorderColor = Color.Transparent,
+            unfocusedBorderColor = Color.Transparent,
+            focusedTextColor = Dark,
+            unfocusedTextColor = Dark,
+            cursorColor = Dark,
+            focusedPlaceholderColor = Gray,
+            unfocusedPlaceholderColor = Gray
+        ),
+        textStyle = MaterialTheme.typography.bodyMedium.copy(
+            color = Dark
         )
-      }
-    },
-    trailingIcon = {
-      if (query.isNotEmpty()) {
-        IconButton(
-          onClick = { onQueryChange("") }
-        ) {
-          Icon(
-            imageVector = Icons.Default.Clear,
-            contentDescription = "Clear",
-            tint = Gray
-          )
-        }
-      }
-    },
-    singleLine = true,
-    shape = RoundedCornerShape(Shapes.medium),
-    colors = OutlinedTextFieldDefaults.colors(
-      focusedContainerColor = LightGray,
-      unfocusedContainerColor = LightGray,
-      focusedBorderColor = Color.Transparent,
-      unfocusedBorderColor = Color.Transparent,
-      focusedTextColor = Dark,
-      unfocusedTextColor = Dark,
-      cursorColor = Dark,
-      focusedPlaceholderColor = Gray,
-      unfocusedPlaceholderColor = Gray
-    ),
-    textStyle = MaterialTheme.typography.bodyMedium.copy(
-      color = Dark
     )
-  )
 }
-

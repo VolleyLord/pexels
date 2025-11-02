@@ -65,48 +65,52 @@ class PhotosRepositoryImpl @Inject constructor(
   }
 
   /**
-   * Fetches from [PhotosApi], caches via [PhotoDao], and uses [SettingsRepository] for API key.
+   * Fetches from [PhotosApi] or [PhotoDao] depending on source.
    *
    * @param photoId The ID of the photo to retrieve.
+   * @param isFromBookmarks Whether to load from database only (for bookmarks).
    * @return A [Flow] emitting a [NetworkResult] containing the [Photo] or an error.
    */
-  override fun getPhotoDetail(photoId: Int): Flow<NetworkResult<Photo>> = flow {
+  override fun getPhotoDetail(photoId: Int, isFromBookmarks: Boolean): Flow<NetworkResult<Photo>> = flow {
+    emit(NetworkResult.Loading)
+
+    if (isFromBookmarks) {
+      val photoEntity = dao.getPhotoById(photoId)
+      if (photoEntity != null) {
+        emit(NetworkResult.Success(mapper.mapEntityToDomain(photoEntity)))
+      } else {
+        emit(NetworkResult.Error("Photo not found in bookmarks"))
+      }
+      return@flow
+    }
+
     val cachedPhotoEntity = dao.getPhotoById(photoId)
     try {
-      emit(NetworkResult.Loading)
-
-      // Fetch from network to get the latest data
       val apiKey = settingsRepository.getApiKey()?.value
       if (apiKey.isNullOrBlank()) {
         if (cachedPhotoEntity == null) {
           emit(NetworkResult.Error("API key not found and no cached data available."))
         } else {
-          // If API key is null/blank but cached data exists, we've already emitted Loading.
           emit(NetworkResult.Success(mapper.mapEntityToDomain(cachedPhotoEntity)))
         }
-        return@flow // Stop if no API key and we've already emitted cache
+        return@flow
       }
 
       val response = api.getPhoto(apiKey = apiKey, id = photoId)
       val freshPhoto = mapper.mapDtoToDomain(response)
 
-      // Save fresh data to the database
       dao.insertPhotos(listOf(mapper.mapDomainToEntity(freshPhoto)))
 
-      // Emit the fresh data
       val updatedPhotoEntity = dao.getPhotoById(photoId)
       if (updatedPhotoEntity != null) {
         emit(NetworkResult.Success(mapper.mapEntityToDomain(updatedPhotoEntity)))
       } else {
-        // Fallback: if re-fetching from DB somehow fails, use the fresh object directly.
         emit(NetworkResult.Success(freshPhoto))
       }
     } catch (e: Exception) {
-      // Network fetch failed.
       if (cachedPhotoEntity == null) {
         emit(NetworkResult.Error(e.message ?: "Unknown error occurred"))
       } else {
-        // If network failed but cached data exists, emit the cached data as success.
         emit(NetworkResult.Success(mapper.mapEntityToDomain(cachedPhotoEntity)))
       }
     }

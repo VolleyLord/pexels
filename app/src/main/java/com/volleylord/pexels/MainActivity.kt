@@ -11,11 +11,15 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.volleylord.core.ui.theme.PexelsTheme
+import com.volleylord.feature_splash.SplashScreen
+import com.volleylord.feature_splash.SplashViewModel
 import com.volleylord.pexels.navigation.AppNavigation
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -41,7 +45,7 @@ class MainActivity : ComponentActivity() {
           modifier = Modifier.fillMaxSize(),
           color = MaterialTheme.colorScheme.background
         ) {
-          RenderUiState(uiState)
+          RenderUiState(uiState, viewModel)
         }
       }
     }
@@ -51,15 +55,25 @@ class MainActivity : ComponentActivity() {
    * Renders the UI based on the current [MainUiState].
    *
    * @param uiState The state of the main screen (loading or ready).
+   * @param viewModel The MainViewModel for updating state when splash is ready.
    */
   @Composable
-  private fun RenderUiState(uiState: MainUiState) {
+  private fun RenderUiState(
+    uiState: MainUiState,
+    viewModel: MainViewModel
+  ) {
     when (uiState) {
-      is MainUiState.Loading -> Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-      ) {
-        CircularProgressIndicator()
+      is MainUiState.Loading -> {
+        val splashViewModel: SplashViewModel = hiltViewModel()
+        val splashUiState by splashViewModel.uiState.collectAsStateWithLifecycle()
+        SplashScreen(iconResId = R.drawable.splash_icon)
+        
+        // once splash screen is ready, switch to ViewModel
+        LaunchedEffect(splashUiState) {
+          if (splashUiState is com.volleylord.feature_splash.SplashUiState.Ready) {
+            viewModel.onSplashReady()
+          }
+        }
       }
 
       is MainUiState.Ready -> AppNavigation(startDestination = uiState.startDestination)
