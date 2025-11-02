@@ -51,4 +51,49 @@ interface PhotoDao {
    */
   @Query("SELECT COUNT(*) FROM photos")
   suspend fun getCachedPhotosCount(): Int
+
+  /**
+   * Retrieves cached photos for a specific query type that are still valid (not expired).
+   * Cache is valid for 1 hour (3600000 milliseconds).
+   *
+   * @param queryType The query type (empty string for curated/popular photos, or search query).
+   * @param currentTime The current timestamp in milliseconds.
+   * @param cacheValidityMillis Cache validity period in milliseconds (default: 1 hour).
+   * @return List of cached photos that are still valid.
+   */
+  @Query("""
+    SELECT * FROM photos 
+    WHERE queryType = :queryType 
+    AND cachedAt > (:currentTime - :cacheValidityMillis)
+    ORDER BY id DESC
+    LIMIT 30
+  """)
+  suspend fun getCachedPhotosByQuery(
+    queryType: String,
+    currentTime: Long,
+    cacheValidityMillis: Long = 3600000L
+  ): List<PhotoEntity>
+
+  /**
+   * Clears expired cache entries (older than 1 hour).
+   *
+   * @param currentTime The current timestamp in milliseconds.
+   * @param cacheValidityMillis Cache validity period in milliseconds (default: 1 hour).
+   */
+  @Query("""
+    DELETE FROM photos 
+    WHERE cachedAt <= (:currentTime - :cacheValidityMillis)
+  """)
+  suspend fun clearExpiredCache(
+    currentTime: Long,
+    cacheValidityMillis: Long = 3600000L
+  )
+
+  /**
+   * Clears cache for a specific query type.
+   *
+   * @param queryType The query type to clear cache for.
+   */
+  @Query("DELETE FROM photos WHERE queryType = :queryType")
+  suspend fun clearCacheForQuery(queryType: String)
 }

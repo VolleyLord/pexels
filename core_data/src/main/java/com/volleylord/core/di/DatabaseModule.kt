@@ -2,6 +2,8 @@ package com.volleylord.core.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.volleylord.core.data.local.dao.PhotoDao
 import com.volleylord.core.data.local.database.AppDatabase
 import dagger.Module
@@ -25,6 +27,16 @@ object DatabaseModule {
    * @param context The application context.
    * @return The [AppDatabase] instance.
    */
+  /**
+   * Migration from version 1 to 2: Add cachedAt and queryType columns.
+   */
+  private val MIGRATION_1_2 = object : Migration(1, 2) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+      database.execSQL("ALTER TABLE photos ADD COLUMN cachedAt INTEGER NOT NULL DEFAULT ${System.currentTimeMillis()}")
+      database.execSQL("ALTER TABLE photos ADD COLUMN queryType TEXT NOT NULL DEFAULT ''")
+    }
+  }
+
   @Provides
   @Singleton
   fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
@@ -32,7 +44,10 @@ object DatabaseModule {
       context,
       AppDatabase::class.java,
       "photos_database"
-    ).build()
+    )
+      .addMigrations(MIGRATION_1_2)
+      .fallbackToDestructiveMigration() // For development only - remove in production
+      .build()
   }
 
   /**

@@ -31,5 +31,9 @@ data class PhotoEntity(
   /** The URL of the full-size image, if available. */
   val largeImageUrl: String?,
   /** The alternative text description for accessibility, if available. */
-  val alt: String?
+  val alt: String?,
+  /** Timestamp when the photo was cached (in milliseconds since epoch). */
+  val cachedAt: Long = System.currentTimeMillis(),
+  /** Query type: empty string for curated/popular photos, or search query. */
+  val queryType: String = ""
 )

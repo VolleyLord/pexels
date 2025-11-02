@@ -18,8 +18,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.volleylord.core.ui.theme.Dark
@@ -33,6 +36,7 @@ import com.volleylord.core.ui.theme.Shapes
  * Search bar component matching Figma design specifications.
  * @param query The current search query text.
  * @param onQueryChange Callback when the search query changes.
+ * @param onSearchClick Callback when search action is triggered (e.g., IME action or button click).
  * @param placeholder The placeholder text to display when the field is empty.
  * @param modifier Modifier to be applied to the search bar.
  * @param searchIconResId Resource ID (search_bar_icon).
@@ -42,6 +46,7 @@ import com.volleylord.core.ui.theme.Shapes
 fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
+    onSearchClick: (() -> Unit)? = null,
     placeholder: String = "Search",
     modifier: Modifier = Modifier,
     searchIconResId: Int = android.R.drawable.ic_menu_search
@@ -64,6 +69,14 @@ fun SearchBar(
         modifier = modifier
             .fillMaxWidth()
             .height(searchBarHeight),
+        keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Search
+        ),
+        keyboardActions = KeyboardActions(
+            onSearch = {
+                onSearchClick?.invoke()
+            }
+        ),
         placeholder = {
             Text(
                 text = placeholder,

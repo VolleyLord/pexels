@@ -10,7 +10,7 @@ import com.volleylord.core.data.local.entities.PhotoEntity
  */
 @Database(
   entities = [PhotoEntity::class],
-  version = 1,
+  version = 2,
   exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

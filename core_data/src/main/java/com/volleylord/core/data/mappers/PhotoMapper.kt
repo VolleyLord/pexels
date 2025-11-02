@@ -81,12 +81,18 @@ class PhotoMapper @Inject constructor() {
   }
 
   /**
-   * Maps a database entity to a domain model.
+   * Maps a domain model to a database entity.
    *
-   * @param entity The [PhotoEntity] to map.
-   * @return A [Photo] domain model.
+   * @param domain The [Photo] domain model to map.
+   * @param queryType The query type (empty string for curated/popular photos, or search query).
+   * @param cachedAt The timestamp when the photo was cached (default: current time).
+   * @return A [PhotoEntity] database entity.
    */
-  fun mapDomainToEntity(domain: Photo): PhotoEntity {
+  fun mapDomainToEntity(
+    domain: Photo,
+    queryType: String = "",
+    cachedAt: Long = System.currentTimeMillis()
+  ): PhotoEntity {
     return PhotoEntity(
       id = domain.id,
       width = domain.width,
@@ -99,7 +105,9 @@ class PhotoMapper @Inject constructor() {
       thumbnailUrl = domain.thumbnailUrl,
       tinyThumbnailUrl = domain.tinyThumbnailUrl,
       largeImageUrl = domain.largeImageUrl,
-      alt = domain.alt
+      alt = domain.alt,
+      queryType = queryType,
+      cachedAt = cachedAt
     )
   }
 

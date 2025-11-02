@@ -63,14 +63,28 @@ class PhotoListViewModel @Inject constructor(
   fun updateSearchQuery(query: String) {
     _uiState.update { state ->
       if (query.isNotBlank()) {
-        val updatedCollections = state.featuredCollections.map { it.copy(isSelected = false) }
+        // Check if query matches any collection name (case-insensitive)
+        val matchingCollection = state.featuredCollections.firstOrNull { 
+          it.name.lowercase() == query.trim().lowercase() 
+        }
+        
+        val updatedCollections = if (matchingCollection != null) {
+          // If query matches a collection, mark it as selected
+          state.featuredCollections.map { col ->
+            col.copy(isSelected = col.id == matchingCollection.id)
+          }
+        } else {
+          // No match, deselect all
+          state.featuredCollections.map { it.copy(isSelected = false) }
+        }
+        
         state.copy(
           searchQuery = query,
           featuredCollections = updatedCollections,
-          selectedCollection = null
+          selectedCollection = matchingCollection
         )
       } else {
-        // If search is empty,return to selected category or Curated (null = Curated)
+        // If search is empty, return to selected category or Curated (null = Curated)
         val updatedCollections = state.featuredCollections.map { col ->
           col.copy(isSelected = state.selectedCollection?.id == col.id)
         }
@@ -85,6 +99,7 @@ class PhotoListViewModel @Inject constructor(
 
   /**
    * Handles collection selection.
+   * Sets the collection name in search bar and triggers search automatically.
    */
   fun selectCollection(collection: Collection) {
     _uiState.update { state ->
@@ -98,7 +113,7 @@ class PhotoListViewModel @Inject constructor(
       state.copy(
         featuredCollections = updatedCollections,
         selectedCollection = collection,
-        searchQuery = "" // clear search when category selected
+        searchQuery = collection.name // Set collection name in search bar
       )
     }
     loadPhotosForSelectedCollection()
