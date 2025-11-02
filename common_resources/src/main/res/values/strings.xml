@@ -1,0 +1,69 @@
+<resources>
+  <!--
+    Naming Convention:
+    feature_component_description
+    - feature: (e.g., photo_list, settings, common)
+    - component: (e.g., button, label, screen_title, error)
+    - description: (e.g., retry, save_api_key, network_failed)
+    -->
+
+  <!-- =================================================================================== -->
+  <!-- Common Strings (Used across multiple features)                                      -->
+  <!-- =================================================================================== -->
+  <string name="common_button_retry">Retry</string>
+
+
+  <!-- =================================================================================== -->
+  <!-- Photo List Screen                                                                   -->
+  <!-- =================================================================================== -->
+  <string name="photo_list_screen_title">Photos</string>
+  <string name="photo_list_loading_message">Loading photos…</string>
+  <string name="photo_list_empty_state_title">No photos found</string>
+  <string name="photo_list_empty_state_description">Try refreshing or check your connection</string>
+  <string name="photo_list_item_attribution">Photo by %1$s</string>
+
+
+  <!-- =================================================================================== -->
+  <!-- Photo Details Screen                                                                -->
+  <!-- =================================================================================== -->
+  <string name="photo_details_screen_title">Photo Details</string>
+  <string name="photo_details_loading_message">Loading photo details…</string>
+  <string name="photo_details_section_title">Details</string>
+  <string name="photo_details_label_photographer">Photographer</string>
+  <string name="photo_details_label_description">Description</string>
+  <string name="photo_details_label_dimensions">Dimensions</string>
+  <string name="photo_details_dimensions_format">%1$d × %2$d pixels</string>
+  <string name="photo_details_action_view_on_web">View on Web</string>
+
+
+  <!-- =================================================================================== -->
+  <!-- Error Messages                                                                      -->
+  <!-- =================================================================================== -->
+  <!-- Generic Errors -->
+  <string name="error_generic">An error occurred</string>
+  <string name="error_unknown">An unknown error occurred</string>
+  <string name="error_network">Network error: Please check your connection and try again.</string>
+
+  <!-- Photo Loading Errors -->
+  <string name="error_photo_list_load_failed">Failed to load photos</string>
+  <string name="error_photo_list_append_failed">Failed to load more photos</string>
+  <string name="error_photo_details_load_failed">Failed to load photo details</string>
+
+  <!-- API Key & Security Errors -->
+  <string name="error_api_key_empty">API key cannot be empty.</string>
+  <string name="error_api_key_invalid">Invalid API key format. Please check your API key.</string>
+  <string name="error_api_key_save_failed">Failed to save the API key. An unknown error occurred.</string>
+  <string name="error_security_keystore_not_ready">Device security error. Please ensure your device has a lock screen set up.</string>
+  <string name="error_security_encryption_failed">Failed to securely store the API key. Please try again.</string>
+  <string name="error_security_generic">Security error: Unable to securely store the API key.</string>
+
+
+  <!-- =================================================================================== -->
+  <!-- Content Descriptions (For accessibility)                                            -->
+  <!-- =================================================================================== -->
+  <string name="content_description_navigate_back">Navigate Back</string>
+  <string name="content_description_open_settings">Open settings</string>
+  <string name="content_description_photo_item">Photo by %1$s</string>
+  <string name="content_description_photo_details_image">Photo image</string>
+  <string name="content_description_open_in_browser">Open photo source in browser</string>
+</resources>
