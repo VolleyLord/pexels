@@ -38,7 +38,8 @@ fun AppNavigation(startDestination: AppDestination) {
         viewModel = hiltViewModel(),
         onBackClick = {
           navController.popBackStack()
-        }
+        },
+        isFromBookmarks = args.isFromBookmarks
       )
     }
   }

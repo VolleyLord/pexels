@@ -18,6 +18,10 @@ data object PhotoListDestination: AppDestination
  * Navigation destination for the photo detail screen.
  *
  * @property photoId The ID of the selected photo to display.
+ * @property isFromBookmarks Whether the photo is being loaded from bookmarks.
  */
 @Serializable
-data class PhotoDetailDestination(val photoId: Int): AppDestination
+data class PhotoDetailDestination(
+    val photoId: Int,
+    val isFromBookmarks: Boolean = false
+): AppDestination
