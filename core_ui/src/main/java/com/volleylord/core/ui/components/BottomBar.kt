@@ -41,13 +41,13 @@ import com.volleylord.core.ui.theme.White
  */
 @Composable
 fun BottomBar(
-  selectedTab: Int = 0,
-  onTabSelected: (Int) -> Unit,
-  modifier: Modifier = Modifier,
-  homeIconActiveResId: Int = android.R.drawable.ic_menu_recent_history,
-  homeIconInactiveResId: Int = android.R.drawable.ic_menu_recent_history,
-  bookmarkIconActiveResId: Int = android.R.drawable.star_big_on,
-  bookmarkIconInactiveResId: Int = android.R.drawable.star_big_off
+    selectedTab: Int = 0,
+    onTabSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    homeIconActiveResId: Int = android.R.drawable.ic_menu_recent_history,
+    homeIconInactiveResId: Int = android.R.drawable.ic_menu_recent_history,
+    bookmarkIconActiveResId: Int = android.R.drawable.star_big_on,
+    bookmarkIconInactiveResId: Int = android.R.drawable.star_big_off
 ) {
     val configuration = LocalConfiguration.current
 
@@ -70,7 +70,7 @@ fun BottomBar(
 
     val homeIconLeft = (baseHomeIconLeft * scale).dp
     val bookmarkIconLeft = (baseBookmarkIconLeft * scale).dp
-    
+
     // use Card for box-shadow effect
     Card(
         modifier = modifier
@@ -136,7 +136,7 @@ fun BottomBar(
                     modifier = Modifier.offset(x = homeIconLeft),
                     iconSize = iconSize
                 )
-                
+
                 // Bookmarks Icon
                 BottomBarIcon(
                     iconActiveResId = bookmarkIconActiveResId,
@@ -185,4 +185,3 @@ private fun BottomBarIcon(
         )
     }
 }
-

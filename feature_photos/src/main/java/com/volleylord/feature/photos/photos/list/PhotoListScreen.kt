@@ -5,6 +5,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -50,6 +52,9 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.volleylord.common.R
 import com.volleylord.core.domain.models.Collection
 import com.volleylord.core.domain.models.Photo
@@ -61,14 +66,14 @@ import com.volleylord.feature.photos.photos.components.PhotoItem
  * Represents the paging state for the photo list screen.
  */
 private sealed class PagingState {
-  /** Indicates the screen is loading for the first time. */
-  object Loading : PagingState()
-  /** Indicates an error occurred while loading photos. */
-  data class Error(val throwable: Throwable) : PagingState()
-  /** Indicates no photos are available to display. */
-  object Empty : PagingState()
-  /** Indicates photos are available to display. */
-  object Data : PagingState()
+    /** Indicates the screen is loading for the first time. */
+    object Loading : PagingState()
+    /** Indicates an error occurred while loading photos. */
+    data class Error(val throwable: Throwable) : PagingState()
+    /** Indicates no photos are available to display. */
+    object Empty : PagingState()
+    /** Indicates photos are available to display. */
+    object Data : PagingState()
 }
 
 /**
@@ -80,43 +85,44 @@ private sealed class PagingState {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PhotoListScreen(
-  viewModel: PhotoListViewModel,
-  onPhotoClick: (Int) -> Unit
+    viewModel: PhotoListViewModel,
+    onPhotoClick: (Int) -> Unit
 ) {
-  val lazyPagingItems = viewModel.photos.collectAsLazyPagingItems()
-  val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val lazyPagingItems = viewModel.photos.collectAsLazyPagingItems()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-  val context = LocalContext.current
-  val homeIconActiveResId = context.resources.getIdentifier("home_button_active", "drawable", context.packageName)
-  val homeIconInactiveResId = context.resources.getIdentifier("home_button_inactive", "drawable", context.packageName)
-  val bookmarkIconActiveResId = context.resources.getIdentifier("bookmark_active", "drawable", context.packageName)
-  val bookmarkIconInactiveResId = context.resources.getIdentifier("bookmark_inactive", "drawable", context.packageName)
-  val searchIconResId = context.resources.getIdentifier("search_bar_icon", "drawable", context.packageName)
+    val context = LocalContext.current
+    val homeIconActiveResId = context.resources.getIdentifier("home_button_active", "drawable", context.packageName)
+    val homeIconInactiveResId = context.resources.getIdentifier("home_button_inactive", "drawable", context.packageName)
+    val bookmarkIconActiveResId = context.resources.getIdentifier("bookmark_active", "drawable", context.packageName)
+    val bookmarkIconInactiveResId = context.resources.getIdentifier("bookmark_inactive", "drawable", context.packageName)
+    val searchIconResId = context.resources.getIdentifier("search_bar_icon", "drawable", context.packageName)
 
-  Scaffold(
-    modifier = Modifier.fillMaxSize(),
-    containerColor = com.volleylord.core.ui.theme.White, // Белый фон
-    bottomBar = {
-      com.volleylord.core.ui.components.BottomBar(
-        selectedTab = 0, // TODO: manage through state/navigation
-        onTabSelected = { /* TODO: navigate to tab */ },
-        homeIconActiveResId = if (homeIconActiveResId != 0) homeIconActiveResId else android.R.drawable.ic_menu_recent_history,
-        homeIconInactiveResId = if (homeIconInactiveResId != 0) homeIconInactiveResId else android.R.drawable.ic_menu_recent_history,
-        bookmarkIconActiveResId = if (bookmarkIconActiveResId != 0) bookmarkIconActiveResId else android.R.drawable.star_big_on,
-        bookmarkIconInactiveResId = if (bookmarkIconInactiveResId != 0) bookmarkIconInactiveResId else android.R.drawable.star_big_off
-      )
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = com.volleylord.core.ui.theme.White, // Белый фон
+        bottomBar = {
+            com.volleylord.core.ui.components.BottomBar(
+                selectedTab = 0, // TODO: manage through state/navigation
+                onTabSelected = { /* TODO: navigate to tab */ },
+                homeIconActiveResId = if (homeIconActiveResId != 0) homeIconActiveResId else android.R.drawable.ic_menu_recent_history,
+                homeIconInactiveResId = if (homeIconInactiveResId != 0) homeIconInactiveResId else android.R.drawable.ic_menu_recent_history,
+                bookmarkIconActiveResId = if (bookmarkIconActiveResId != 0) bookmarkIconActiveResId else android.R.drawable.star_big_on,
+                bookmarkIconInactiveResId = if (bookmarkIconInactiveResId != 0) bookmarkIconInactiveResId else android.R.drawable.star_big_off
+            )
+        }
+    ) { paddingValues ->
+        PhotoListContent(
+            lazyPagingItems = lazyPagingItems,
+            uiState = uiState,
+            onPhotoClick = onPhotoClick,
+            onSearchQueryChange = viewModel::updateSearchQuery,
+            onCollectionClick = viewModel::selectCollection,
+            onLoadPopularPhotos = viewModel::loadPopularPhotos,
+            searchIconResId = searchIconResId,
+            modifier = Modifier.padding(paddingValues)
+        )
     }
-  ) { paddingValues ->
-    PhotoListContent(
-      lazyPagingItems = lazyPagingItems,
-      uiState = uiState,
-      onPhotoClick = onPhotoClick,
-      onSearchQueryChange = viewModel::updateSearchQuery,
-      onCollectionClick = viewModel::selectCollection,
-      searchIconResId = searchIconResId,
-      modifier = Modifier.padding(paddingValues)
-    )
-  }
 }
 
 /**
@@ -127,14 +133,14 @@ fun PhotoListScreen(
  */
 @Composable
 private fun rememberPagingState(items: LazyPagingItems<*>): PagingState {
-  val refreshState = items.loadState.refresh
+    val refreshState = items.loadState.refresh
 
-  return when {
-    refreshState is LoadState.Loading && items.itemCount == 0 -> PagingState.Loading
-    refreshState is LoadState.Error -> PagingState.Error(refreshState.error)
-    items.itemCount == 0 && refreshState is LoadState.NotLoading -> PagingState.Empty
-    else -> PagingState.Data
-  }
+    return when {
+        refreshState is LoadState.Loading && items.itemCount == 0 -> PagingState.Loading
+        refreshState is LoadState.Error -> PagingState.Error(refreshState.error)
+        items.itemCount == 0 && refreshState is LoadState.NotLoading -> PagingState.Empty
+        else -> PagingState.Data
+    }
 }
 
 /**
@@ -150,64 +156,102 @@ private fun rememberPagingState(items: LazyPagingItems<*>): PagingState {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PhotoListContent(
-  lazyPagingItems: LazyPagingItems<Photo>,
-  uiState: PhotoListUiState,
-  onPhotoClick: (Int) -> Unit,
-  onSearchQueryChange: (String) -> Unit,
-  onCollectionClick: (Collection) -> Unit,
-  searchIconResId: Int,
-  modifier: Modifier = Modifier
+    lazyPagingItems: LazyPagingItems<Photo>,
+    uiState: PhotoListUiState,
+    onPhotoClick: (Int) -> Unit,
+    onSearchQueryChange: (String) -> Unit,
+    onCollectionClick: (Collection) -> Unit,
+    onLoadPopularPhotos: () -> Unit,
+    searchIconResId: Int,
+    modifier: Modifier = Modifier
 ) {
-  val state = rememberPullToRefreshState()
-  val pagingState = rememberPagingState(lazyPagingItems)
-  val isRefreshing =
-    lazyPagingItems.loadState.refresh is LoadState.Loading && lazyPagingItems.itemCount > 0
+    val state = rememberPullToRefreshState()
+    val pagingState = rememberPagingState(lazyPagingItems)
+    val isRefreshing =
+        lazyPagingItems.loadState.refresh is LoadState.Loading && lazyPagingItems.itemCount > 0
 
-  PullToRefreshBox(
-    isRefreshing = isRefreshing,
-    onRefresh = { lazyPagingItems.refresh() },
-    modifier = modifier.fillMaxSize(),
-    state = state
-  ) {
-    Column(
-      modifier = Modifier
-        .fillMaxSize()
-        .background(com.volleylord.core.ui.theme.White)
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = { lazyPagingItems.refresh() },
+        modifier = modifier.fillMaxSize(),
+        state = state
     ) {
-      SearchBar(
-        query = uiState.searchQuery,
-        onQueryChange = onSearchQueryChange,
-        searchIconResId = if (searchIconResId != 0) searchIconResId else android.R.drawable.ic_menu_search,
-        modifier = Modifier
-          .fillMaxWidth()
-            .padding(
-                top = com.volleylord.core.ui.theme.Spacing.searchBarTop,
-                start = com.volleylord.core.ui.theme.Spacing.horizontal,
-                end = com.volleylord.core.ui.theme.Spacing.horizontal
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(com.volleylord.core.ui.theme.White)
+        ) {
+            SearchBar(
+                query = uiState.searchQuery,
+                onQueryChange = onSearchQueryChange,
+                searchIconResId = if (searchIconResId != 0) searchIconResId else android.R.drawable.ic_menu_search,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        top = com.volleylord.core.ui.theme.Spacing.searchBarTop,
+                        start = com.volleylord.core.ui.theme.Spacing.horizontal,
+                        end = com.volleylord.core.ui.theme.Spacing.horizontal
+                    )
             )
-      )
 
-      FeaturedCollections(
-        collections = uiState.featuredCollections,
-        onCollectionClick = onCollectionClick,
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(
-            top = com.volleylord.core.ui.theme.Spacing.featuredCollectionsTop,
-            start = com.volleylord.core.ui.theme.Spacing.horizontal,
-            end = com.volleylord.core.ui.theme.Spacing.horizontal
-          )
-      )
+            // Show progress bar below SearchBar if searching (when headers are hidden)
+            val isLoading = lazyPagingItems.loadState.refresh is LoadState.Loading
+            val isSearching = uiState.searchQuery.isNotEmpty()
+            if (isLoading && isSearching) {
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            top = com.volleylord.core.ui.theme.Spacing.featuredCollectionsTop,
+                            start = com.volleylord.core.ui.theme.Spacing.horizontal,
+                            end = com.volleylord.core.ui.theme.Spacing.horizontal
+                        ),
+                    color = com.volleylord.core.ui.theme.PrimaryRed,
+                    trackColor = com.volleylord.core.ui.theme.LightGray
+                )
+            }
 
-      // Photo Grid
-      PagingContent(
-        pagingState = pagingState,
-        lazyPagingItems = lazyPagingItems,
-        onPhotoClick = onPhotoClick,
-        modifier = Modifier.weight(1f)
-      )
+            // Show FeaturedCollections only when not searching
+            if (!isSearching) {
+                FeaturedCollections(
+                    collections = uiState.featuredCollections,
+                    onCollectionClick = onCollectionClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            top = com.volleylord.core.ui.theme.Spacing.featuredCollectionsTop,
+                            start = com.volleylord.core.ui.theme.Spacing.horizontal,
+                            end = com.volleylord.core.ui.theme.Spacing.horizontal
+                        )
+                )
+
+                // Show progress bar below FeaturedCollections if loading and headers are visible
+                if (isLoading) {
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                top = 8.dp,
+                                start = com.volleylord.core.ui.theme.Spacing.horizontal,
+                                end = com.volleylord.core.ui.theme.Spacing.horizontal
+                            ),
+                        color = com.volleylord.core.ui.theme.PrimaryRed,
+                        trackColor = com.volleylord.core.ui.theme.LightGray
+                    )
+                }
+            }
+
+            // Photo Grid
+            PagingContent(
+                pagingState = pagingState,
+                lazyPagingItems = lazyPagingItems,
+                onPhotoClick = onPhotoClick,
+                onLoadPopularPhotos = onLoadPopularPhotos,
+                onSearchQueryChange = onSearchQueryChange,
+                modifier = Modifier.weight(1f)
+            )
+        }
     }
-  }
 }
 
 /**
@@ -216,30 +260,38 @@ private fun PhotoListContent(
  * @param pagingState The current [PagingState].
  * @param lazyPagingItems The [LazyPagingItems] containing the photos.
  * @param onPhotoClick Callback invoked when a photo is clicked, passing the photo ID.
+ * @param onLoadPopularPhotos Callback to load popular curated photos.
+ * @param onSearchQueryChange Callback to clear search query.
  * @param modifier The modifier for the composable.
  */
 @Composable
 private fun PagingContent(
-  pagingState: PagingState,
-  lazyPagingItems: LazyPagingItems<Photo>,
-  onPhotoClick: (Int) -> Unit,
-  modifier: Modifier = Modifier
+    pagingState: PagingState,
+    lazyPagingItems: LazyPagingItems<Photo>,
+    onPhotoClick: (Int) -> Unit,
+    onLoadPopularPhotos: () -> Unit,
+    onSearchQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-  when (pagingState) {
-    is PagingState.Loading -> LoadingState(modifier)
-    is PagingState.Error -> ErrorState(
-      error = pagingState.throwable,
-      onRetry = { lazyPagingItems.retry() },
-      modifier = modifier
-    )
+    when (pagingState) {
+        is PagingState.Loading -> LoadingState(modifier)
+        is PagingState.Error -> ErrorState(
+            error = pagingState.throwable,
+            onRetry = { lazyPagingItems.retry() },
+            modifier = modifier
+        )
 
-    is PagingState.Empty -> EmptyState(modifier)
-    is PagingState.Data -> PhotoGrid(
-      lazyPagingItems = lazyPagingItems,
-      onPhotoClick = onPhotoClick,
-      modifier = modifier
-    )
-  }
+        is PagingState.Empty -> NoResultsStub(
+            onExploreClick = onLoadPopularPhotos,
+            onTextClick = { onSearchQueryChange("") },
+            modifier = modifier
+        )
+        is PagingState.Data -> PhotoGrid(
+            lazyPagingItems = lazyPagingItems,
+            onPhotoClick = onPhotoClick,
+            modifier = modifier
+        )
+    }
 }
 
 /**
@@ -249,27 +301,27 @@ private fun PagingContent(
  */
 @Composable
 private fun LoadingState(
-  modifier: Modifier = Modifier
+    modifier: Modifier = Modifier
 ) {
-  Box(
-    modifier = modifier.fillMaxSize(),
-    contentAlignment = Alignment.Center
-  ) {
-    Column(
-      horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.spacedBy(16.dp)
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
-      CircularProgressIndicator(
-        modifier = Modifier.size(48.dp),
-        color = MaterialTheme.colorScheme.primary
-      )
-      Text(
-        text = stringResource(R.string.photo_list_loading_message),
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-      )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(48.dp),
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = stringResource(R.string.photo_list_loading_message),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
+        }
     }
-  }
 }
 
 /**
@@ -281,39 +333,39 @@ private fun LoadingState(
  */
 @Composable
 private fun ErrorState(
-  error: Throwable,
-  onRetry: () -> Unit,
-  modifier: Modifier = Modifier
+    error: Throwable,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-  Column(
-    modifier = modifier
-      .fillMaxSize()
-      .padding(24.dp),
-    horizontalAlignment = Alignment.CenterHorizontally,
-    verticalArrangement = Arrangement.Center
-  ) {
-    Text(
-      text = stringResource(R.string.error_photo_list_load_failed),
-      style = MaterialTheme.typography.headlineSmall,
-      textAlign = TextAlign.Center,
-      color = MaterialTheme.colorScheme.error
-    )
-
-    Text(
-      text = error.message ?: stringResource(R.string.error_generic),
-      style = MaterialTheme.typography.bodyMedium,
-      textAlign = TextAlign.Center,
-      modifier = Modifier.padding(vertical = 16.dp),
-      color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-    )
-
-    Button(
-      onClick = onRetry,
-      modifier = Modifier.padding(top = 8.dp)
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-      Text(stringResource(R.string.common_button_retry))
+        Text(
+            text = stringResource(R.string.error_photo_list_load_failed),
+            style = MaterialTheme.typography.headlineSmall,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.error
+        )
+
+        Text(
+            text = error.message ?: stringResource(R.string.error_generic),
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(vertical = 16.dp),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+        )
+
+        Button(
+            onClick = onRetry,
+            modifier = Modifier.padding(top = 8.dp)
+        ) {
+            Text(stringResource(R.string.common_button_retry))
+        }
     }
-  }
 }
 
 /**
@@ -325,91 +377,80 @@ private fun ErrorState(
  */
 @Composable
 private fun PhotoGrid(
-  lazyPagingItems: LazyPagingItems<Photo>,
-  onPhotoClick: (Int) -> Unit,
-  modifier: Modifier = Modifier
+    lazyPagingItems: LazyPagingItems<Photo>,
+    onPhotoClick: (Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-  val staggeredGridState = rememberLazyStaggeredGridState()
+    val staggeredGridState = rememberLazyStaggeredGridState()
 
-  LazyVerticalStaggeredGrid(
-    columns = StaggeredGridCells.Fixed(2), // 2 columns
-    state = staggeredGridState,
-      modifier = modifier
-      .fillMaxSize()
-      .padding(
-        top = com.volleylord.core.ui.theme.Spacing.imagesGridTop,
-        start = com.volleylord.core.ui.theme.Spacing.horizontal,
-        end = com.volleylord.core.ui.theme.Spacing.horizontal
-      ),
-    horizontalArrangement = Arrangement.spacedBy(10.dp), // gap horiz
-    verticalItemSpacing = 10.dp // gap vert
-  ) {
-    items(
-      count = lazyPagingItems.itemCount,
-      key = { index -> lazyPagingItems.peek(index)?.id ?: index }
-    ) { index ->
-      val photo = lazyPagingItems[index]
-
-      if (photo != null) {
-        // true aspect ratio
-        val aspectRatio = calculateAspectRatio(photo.width, photo.height)
-        PhotoItem(
-          photo = photo,
-          onClick = { onPhotoClick(photo.id) },
-          modifier = Modifier.aspectRatio(aspectRatio)
-        )
-      } else {
-        // shimmer
-        ShimmerPhotoItem(
-          modifier = Modifier.aspectRatio(1f)
-        )
-      }
-    }
-
-    // Handle empty state
-    if (lazyPagingItems.itemCount == 0 &&
-      lazyPagingItems.loadState.refresh is LoadState.NotLoading
+    LazyVerticalStaggeredGrid(
+        columns = StaggeredGridCells.Fixed(2), // 2 columns
+        state = staggeredGridState,
+        modifier = modifier
+            .fillMaxSize()
+            .padding(
+                top = com.volleylord.core.ui.theme.Spacing.imagesGridTop,
+                start = com.volleylord.core.ui.theme.Spacing.horizontal,
+                end = com.volleylord.core.ui.theme.Spacing.horizontal
+            ),
+        horizontalArrangement = Arrangement.spacedBy(10.dp), // gap horiz
+        verticalItemSpacing = 10.dp // gap vert
     ) {
-      item {
-        EmptyState(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(32.dp)
-        )
-      }
-    }
+        items(
+            count = lazyPagingItems.itemCount,
+            key = { index -> lazyPagingItems.peek(index)?.id ?: index }
+        ) { index ->
+            val photo = lazyPagingItems[index]
 
-    // Handle append loading states
-    when (val appendState = lazyPagingItems.loadState.append) {
-      is LoadState.Loading -> {
-        item {
-          Box(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(16.dp),
-            contentAlignment = Alignment.Center
-          ) {
-            CircularProgressIndicator(
-              modifier = Modifier.size(32.dp),
-              strokeWidth = 3.dp
-            )
-          }
+            if (photo != null) {
+                // true aspect ratio
+                val aspectRatio = calculateAspectRatio(photo.width, photo.height)
+                PhotoItem(
+                    photo = photo,
+                    onClick = { onPhotoClick(photo.id) },
+                    modifier = Modifier.aspectRatio(aspectRatio)
+                )
+            } else {
+                // shimmer
+                ShimmerPhotoItem(
+                    modifier = Modifier.aspectRatio(1f)
+                )
+            }
         }
-      }
 
-      is LoadState.Error -> {
-        item {
-          AppendErrorItem(
-            error = appendState.error,
-            onRetry = { lazyPagingItems.retry() }
-          )
+        // Empty state is handled by PagingContent at a higher level
+
+        // Handle append loading states
+        when (val appendState = lazyPagingItems.loadState.append) {
+            is LoadState.Loading -> {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(32.dp),
+                            strokeWidth = 3.dp
+                        )
+                    }
+                }
+            }
+
+            is LoadState.Error -> {
+                item {
+                    AppendErrorItem(
+                        error = appendState.error,
+                        onRetry = { lazyPagingItems.retry() }
+                    )
+                }
+            }
+
+            else -> { /* No additional content needed */
+            }
         }
-      }
-
-      else -> { /* No additional content needed */
-      }
     }
-  }
 }
 
 /**
@@ -420,42 +461,68 @@ private fun PhotoGrid(
  * @return The aspect ratio as a float, or 1f if width or height is invalid.
  */
 private fun calculateAspectRatio(width: Int?, height: Int?): Float {
-  return if (width != null && height != null && width > 0 && height > 0) {
-    width.toFloat() / height.toFloat()
-  } else {
-    1f // Default to square if dimensions are invalid
-  }
+    return if (width != null && height != null && width > 0 && height > 0) {
+        width.toFloat() / height.toFloat()
+    } else {
+        1f // Default to square if dimensions are invalid
+    }
 }
 
 /**
- * Renders the empty state for the photo list screen.
+ * Renders the "No results found" stub component according to Figma specifications.
  *
+ * @param onExploreClick Callback when "Explore" button is clicked.
+ * @param onTextClick Callback when "No results found" text is clicked.
  * @param modifier The modifier for the composable.
  */
 @Composable
-private fun EmptyState(
-  modifier: Modifier = Modifier
+private fun NoResultsStub(
+    onExploreClick: () -> Unit,
+    onTextClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-  Column(
-    modifier = modifier,
-    horizontalAlignment = Alignment.CenterHorizontally,
-    verticalArrangement = Arrangement.Center
-  ) {
-    Text(
-      text = stringResource(R.string.photo_list_empty_state_title),
-      style = MaterialTheme.typography.headlineSmall,
-      textAlign = TextAlign.Center,
-      color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-    )
+    val configuration = LocalConfiguration.current
+    val baseScreenWidth = 375
+    val screenWidth = configuration.screenWidthDp
+    val scale = screenWidth.toFloat() / baseScreenWidth
 
-    Text(
-      text = stringResource(R.string.photo_list_empty_state_description),
-      style = MaterialTheme.typography.bodyMedium,
-      textAlign = TextAlign.Center,
-      modifier = Modifier.padding(top = 8.dp),
-      color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-    )
-  }
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        // "No results found" text - clickable to clear search
+        Text(
+            text = "No results found",
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontSize = (14 * scale).sp,
+                fontWeight = FontWeight.Medium, // 500
+                lineHeight = (14 * scale).sp, // 100% line height
+                letterSpacing = 0.sp // 0% letter spacing
+            ),
+            textAlign = TextAlign.Center,
+            color = com.volleylord.core.ui.theme.TextSecondary, // #333333
+            modifier = Modifier
+                .clickable(onClick = onTextClick)
+                .padding(bottom = 8.dp)
+        )
+
+        // "Explore" button
+        Text(
+            text = "Explore",
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontSize = (18 * scale).sp,
+                fontWeight = FontWeight.Bold, // 700
+                lineHeight = (18 * scale).sp, // 100% line height
+                letterSpacing = 0.sp // 0% letter spacing
+            ),
+            textAlign = TextAlign.Center,
+            color = com.volleylord.core.ui.theme.PrimaryRed,
+            modifier = Modifier.clickable(onClick = onExploreClick)
+        )
+    }
 }
 
 /**
@@ -466,29 +533,29 @@ private fun EmptyState(
  */
 @Composable
 private fun AppendErrorItem(
-  error: Throwable,
-  onRetry: () -> Unit
+    error: Throwable,
+    onRetry: () -> Unit
 ) {
-  Column(
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(16.dp),
-    horizontalAlignment = Alignment.CenterHorizontally
-  ) {
-    Text(
-      text = error.message ?: stringResource(R.string.error_photo_list_append_failed),
-      style = MaterialTheme.typography.bodyMedium,
-      textAlign = TextAlign.Center,
-      color = MaterialTheme.colorScheme.error
-    )
-
-    Button(
-      onClick = onRetry,
-      modifier = Modifier.padding(top = 8.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-      Text(stringResource(R.string.common_button_retry))
+        Text(
+            text = error.message ?: stringResource(R.string.error_photo_list_append_failed),
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.error
+        )
+
+        Button(
+            onClick = onRetry,
+            modifier = Modifier.padding(top = 8.dp)
+        ) {
+            Text(stringResource(R.string.common_button_retry))
+        }
     }
-  }
 }
 
 /**
@@ -498,16 +565,16 @@ private fun AppendErrorItem(
  */
 @Composable
 private fun ShimmerPhotoItem(
-  modifier: Modifier = Modifier
+    modifier: Modifier = Modifier
 ) {
-  val shimmerSize = 120.dp
-  Card(
-    modifier = modifier
-      .size(shimmerSize)
-      .shimmerEffect(shimmerSize)
-  ) {
-    Box(modifier = Modifier.fillMaxSize())
-  }
+    val shimmerSize = 120.dp
+    Card(
+        modifier = modifier
+            .size(shimmerSize)
+            .shimmerEffect(shimmerSize)
+    ) {
+        Box(modifier = Modifier.fillMaxSize())
+    }
 }
 
 /**
@@ -517,24 +584,24 @@ private fun ShimmerPhotoItem(
  * @return The modified [Modifier] with the shimmer effect.
  */
 private fun Modifier.shimmerEffect(size: Dp): Modifier = composed {
-  val sizePx = with(LocalDensity.current) { size.toPx() }
-  val transition = rememberInfiniteTransition(label = "shimmer")
-  val startOffsetX by transition.animateFloat(
-    initialValue = -2 * sizePx,
-    targetValue = 2 * sizePx,
-    animationSpec = infiniteRepeatable(tween(1000)),
-    label = "shimmer_offset"
-  )
-
-  background(
-    brush = Brush.linearGradient(
-      colors = listOf(
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-      ),
-      start = Offset(startOffsetX, 0f),
-      end = Offset(startOffsetX + sizePx, sizePx)
+    val sizePx = with(LocalDensity.current) { size.toPx() }
+    val transition = rememberInfiniteTransition(label = "shimmer")
+    val startOffsetX by transition.animateFloat(
+        initialValue = -2 * sizePx,
+        targetValue = 2 * sizePx,
+        animationSpec = infiniteRepeatable(tween(1000)),
+        label = "shimmer_offset"
     )
-  )
+
+    background(
+        brush = Brush.linearGradient(
+            colors = listOf(
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+            ),
+            start = Offset(startOffsetX, 0f),
+            end = Offset(startOffsetX + sizePx, sizePx)
+        )
+    )
 }

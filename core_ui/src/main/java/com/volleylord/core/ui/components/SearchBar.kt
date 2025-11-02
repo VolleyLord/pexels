@@ -57,7 +57,7 @@ fun SearchBar(
 
     val searchBarHeight = (baseSearchBarHeight * scale).dp
     val iconSize = (baseIconSize * scale).dp
-    
+
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
@@ -81,35 +81,34 @@ fun SearchBar(
                 modifier = Modifier.size(iconSize)
             )
         },
-    trailingIcon = {
-      if (query.isNotEmpty()) {
-        IconButton(
-          onClick = { onQueryChange("") }
-        ) {
-          Icon(
-            imageVector = Icons.Default.Clear,
-            contentDescription = "Clear",
-            tint = Gray
-          )
-        }
-      }
-    },
-    singleLine = true,
-    shape = RoundedCornerShape(Shapes.medium),
-    colors = OutlinedTextFieldDefaults.colors(
-      focusedContainerColor = LightGray,
-      unfocusedContainerColor = LightGray,
-      focusedBorderColor = Color.Transparent,
-      unfocusedBorderColor = Color.Transparent,
-      focusedTextColor = Dark,
-      unfocusedTextColor = Dark,
-      cursorColor = Dark,
-      focusedPlaceholderColor = Gray,
-      unfocusedPlaceholderColor = Gray
-    ),
-    textStyle = MaterialTheme.typography.bodyMedium.copy(
-      color = Dark
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                IconButton(
+                    onClick = { onQueryChange("") }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = "Clear",
+                        tint = Gray
+                    )
+                }
+            }
+        },
+        singleLine = true,
+        shape = RoundedCornerShape(Shapes.medium),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = LightGray,
+            unfocusedContainerColor = LightGray,
+            focusedBorderColor = Color.Transparent,
+            unfocusedBorderColor = Color.Transparent,
+            focusedTextColor = Dark,
+            unfocusedTextColor = Dark,
+            cursorColor = Dark,
+            focusedPlaceholderColor = Gray,
+            unfocusedPlaceholderColor = Gray
+        ),
+        textStyle = MaterialTheme.typography.bodyMedium.copy(
+            color = Dark
+        )
     )
-  )
 }
-
