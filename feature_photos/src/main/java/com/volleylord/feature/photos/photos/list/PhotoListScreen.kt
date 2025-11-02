@@ -49,6 +49,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.compose.ui.platform.LocalContext
 import com.volleylord.common.R
 import com.volleylord.core.domain.models.Collection
 import com.volleylord.core.domain.models.Photo
@@ -85,13 +86,24 @@ fun PhotoListScreen(
   val lazyPagingItems = viewModel.photos.collectAsLazyPagingItems()
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+  val context = LocalContext.current
+  val homeIconActiveResId = context.resources.getIdentifier("home_button_active", "drawable", context.packageName)
+  val homeIconInactiveResId = context.resources.getIdentifier("home_button_inactive", "drawable", context.packageName)
+  val bookmarkIconActiveResId = context.resources.getIdentifier("bookmark_active", "drawable", context.packageName)
+  val bookmarkIconInactiveResId = context.resources.getIdentifier("bookmark_inactive", "drawable", context.packageName)
+  val searchIconResId = context.resources.getIdentifier("search_bar_icon", "drawable", context.packageName)
+
   Scaffold(
     modifier = Modifier.fillMaxSize(),
     containerColor = com.volleylord.core.ui.theme.White, // Белый фон
     bottomBar = {
       com.volleylord.core.ui.components.BottomBar(
-        selectedTab = 0, // TODO: управлять через state/navigation
-        onTabSelected = { /* TODO: navigate to tab */ }
+        selectedTab = 0, // TODO: manage through state/navigation
+        onTabSelected = { /* TODO: navigate to tab */ },
+        homeIconActiveResId = if (homeIconActiveResId != 0) homeIconActiveResId else android.R.drawable.ic_menu_recent_history,
+        homeIconInactiveResId = if (homeIconInactiveResId != 0) homeIconInactiveResId else android.R.drawable.ic_menu_recent_history,
+        bookmarkIconActiveResId = if (bookmarkIconActiveResId != 0) bookmarkIconActiveResId else android.R.drawable.star_big_on,
+        bookmarkIconInactiveResId = if (bookmarkIconInactiveResId != 0) bookmarkIconInactiveResId else android.R.drawable.star_big_off
       )
     }
   ) { paddingValues ->
@@ -101,6 +113,7 @@ fun PhotoListScreen(
       onPhotoClick = onPhotoClick,
       onSearchQueryChange = viewModel::updateSearchQuery,
       onCollectionClick = viewModel::selectCollection,
+      searchIconResId = searchIconResId,
       modifier = Modifier.padding(paddingValues)
     )
   }
@@ -142,6 +155,7 @@ private fun PhotoListContent(
   onPhotoClick: (Int) -> Unit,
   onSearchQueryChange: (String) -> Unit,
   onCollectionClick: (Collection) -> Unit,
+  searchIconResId: Int,
   modifier: Modifier = Modifier
 ) {
   val state = rememberPullToRefreshState()
@@ -158,24 +172,21 @@ private fun PhotoListContent(
     Column(
       modifier = Modifier
         .fillMaxSize()
-        .background(com.volleylord.core.ui.theme.White) // Белый фон для контента
+        .background(com.volleylord.core.ui.theme.White)
     ) {
-      // Search Bar - адаптивная ширина с отступами
-      // top: 56px из Figma считается от высшей точки экрана (включая status bar)
-      // Но поскольку мы в edge-to-edge режиме, нужно учитывать это вручную
       SearchBar(
         query = uiState.searchQuery,
         onQueryChange = onSearchQueryChange,
+        searchIconResId = if (searchIconResId != 0) searchIconResId else android.R.drawable.ic_menu_search,
         modifier = Modifier
           .fillMaxWidth()
             .padding(
-                top = com.volleylord.core.ui.theme.Spacing.searchBarTop, // 56dp от верха экрана
+                top = com.volleylord.core.ui.theme.Spacing.searchBarTop,
                 start = com.volleylord.core.ui.theme.Spacing.horizontal,
                 end = com.volleylord.core.ui.theme.Spacing.horizontal
             )
       )
 
-      // Featured Collections - адаптивная ширина с отступами
       FeaturedCollections(
         collections = uiState.featuredCollections,
         onCollectionClick = onCollectionClick,
@@ -321,7 +332,7 @@ private fun PhotoGrid(
   val staggeredGridState = rememberLazyStaggeredGridState()
 
   LazyVerticalStaggeredGrid(
-    columns = StaggeredGridCells.Fixed(2), // Два столбца - адаптивно
+    columns = StaggeredGridCells.Fixed(2), // 2 columns
     state = staggeredGridState,
       modifier = modifier
       .fillMaxSize()
@@ -330,10 +341,9 @@ private fun PhotoGrid(
         start = com.volleylord.core.ui.theme.Spacing.horizontal,
         end = com.volleylord.core.ui.theme.Spacing.horizontal
       ),
-    horizontalArrangement = Arrangement.spacedBy(10.dp), // gap между колонками
-    verticalItemSpacing = 10.dp // gap между элементами вертикально
+    horizontalArrangement = Arrangement.spacedBy(10.dp), // gap horiz
+    verticalItemSpacing = 10.dp // gap vert
   ) {
-    // Actual photo items
     items(
       count = lazyPagingItems.itemCount,
       key = { index -> lazyPagingItems.peek(index)?.id ?: index }
@@ -341,7 +351,7 @@ private fun PhotoGrid(
       val photo = lazyPagingItems[index]
 
       if (photo != null) {
-        // Используем реальный aspect ratio фото для разной высоты картинок
+        // true aspect ratio
         val aspectRatio = calculateAspectRatio(photo.width, photo.height)
         PhotoItem(
           photo = photo,
@@ -349,7 +359,7 @@ private fun PhotoGrid(
           modifier = Modifier.aspectRatio(aspectRatio)
         )
       } else {
-        // Show shimmer for loading items (1:1 для плейсхолдера)
+        // shimmer
         ShimmerPhotoItem(
           modifier = Modifier.aspectRatio(1f)
         )
