@@ -18,6 +18,7 @@ val White = Color(0xFFFFFFFF)
 val LightGray = Color(0xFFF3F5F9)
 val Gray = Color(0xFF868686)
 val Dark = Color(0xFF1E1E1E)
+val TextSecondary = Color(0xFF333333) // For secondary text like "No results found"
 
 // Legacy colors for backward compatibility (used in DarkColorScheme)
 val Purple80 = Color(0xFFD0BCFF)

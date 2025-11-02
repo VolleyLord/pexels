@@ -111,6 +111,21 @@ class PhotoListViewModel @Inject constructor(
   }
 
   /**
+   * Loads popular curated photos (clears search and resets collection selection).
+   */
+  fun loadPopularPhotos() {
+    _uiState.update { state ->
+      val updatedCollections = state.featuredCollections.map { it.copy(isSelected = false) }
+      state.copy(
+        searchQuery = "",
+        featuredCollections = updatedCollections,
+        selectedCollection = null // Curated
+      )
+    }
+    loadPhotosForSelectedCollection()
+  }
+
+  /**
    * Returns the default 7 popular collections (без Curated, так как она показывается по умолчанию).
    */
   private fun getDefaultCollections(): List<Collection> {
