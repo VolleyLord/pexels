@@ -43,4 +43,12 @@ interface PhotoDao {
    */
   @Query("DELETE FROM photos")
   suspend fun clearAllPhotos()
+
+  /**
+   * Checks if there are any cached photos in the database.
+   *
+   * @return The count of cached photos.
+   */
+  @Query("SELECT COUNT(*) FROM photos")
+  suspend fun getCachedPhotosCount(): Int
 }

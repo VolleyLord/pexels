@@ -55,10 +55,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import android.widget.Toast
+import androidx.compose.runtime.LaunchedEffect
 import com.volleylord.common.R
+import com.volleylord.core.core.network.NetworkErrorUtils
 import com.volleylord.core.domain.models.Collection
 import com.volleylord.core.domain.models.Photo
 import com.volleylord.core.ui.components.FeaturedCollections
+import com.volleylord.core.ui.components.NetworkStub
 import com.volleylord.core.ui.components.SearchBar
 import com.volleylord.feature.photos.photos.components.PhotoItem
 
@@ -125,22 +129,28 @@ fun PhotoListScreen(
     }
 }
 
+
 /**
  * Determines the paging state based on the load state and item count.
+ * Also tracks network errors for displaying appropriate UI.
  *
  * @param items The [LazyPagingItems] containing the photos.
- * @return The current [PagingState].
+ * @return The current [PagingState] and whether it's a network error.
  */
 @Composable
-private fun rememberPagingState(items: LazyPagingItems<*>): PagingState {
+private fun rememberPagingState(items: LazyPagingItems<*>): Pair<PagingState, Boolean> {
     val refreshState = items.loadState.refresh
+    val isNetworkError = refreshState is LoadState.Error && 
+        NetworkErrorUtils.isNetworkError(refreshState.error)
 
-    return when {
+    val pagingState = when {
         refreshState is LoadState.Loading && items.itemCount == 0 -> PagingState.Loading
         refreshState is LoadState.Error -> PagingState.Error(refreshState.error)
         items.itemCount == 0 && refreshState is LoadState.NotLoading -> PagingState.Empty
         else -> PagingState.Data
     }
+
+    return Pair(pagingState, isNetworkError)
 }
 
 /**
@@ -165,10 +175,43 @@ private fun PhotoListContent(
     searchIconResId: Int,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val state = rememberPullToRefreshState()
-    val pagingState = rememberPagingState(lazyPagingItems)
+    val (pagingState, isNetworkError) = rememberPagingState(lazyPagingItems)
     val isRefreshing =
         lazyPagingItems.loadState.refresh is LoadState.Loading && lazyPagingItems.itemCount > 0
+
+    // Show Toast when network error occurs and cached data is available
+    LaunchedEffect(pagingState, lazyPagingItems.itemCount) {
+        if (pagingState is PagingState.Error && 
+            lazyPagingItems.itemCount > 0 && 
+            isNetworkError) {
+            Toast.makeText(
+                context,
+                context.getString(R.string.error_network_no_connection),
+                Toast.LENGTH_SHORT
+            ).show()
+        } else if (pagingState is PagingState.Error && 
+            lazyPagingItems.itemCount == 0 &&
+            !isNetworkError) {
+            // Non-network error with no data - show user-friendly message
+            val errorMessage = NetworkErrorUtils.getUserFriendlyMessage(pagingState.throwable)
+            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Show Toast for append errors when there's existing data
+    LaunchedEffect(lazyPagingItems.loadState.append) {
+        val appendState = lazyPagingItems.loadState.append
+        if (appendState is LoadState.Error && lazyPagingItems.itemCount > 0) {
+            val errorMessage = if (NetworkErrorUtils.isNetworkError(appendState.error)) {
+                context.getString(R.string.error_network_unstable)
+            } else {
+                NetworkErrorUtils.getUserFriendlyMessage(appendState.error)
+            }
+            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     PullToRefreshBox(
         isRefreshing = isRefreshing,
@@ -244,7 +287,9 @@ private fun PhotoListContent(
             // Photo Grid
             PagingContent(
                 pagingState = pagingState,
+                isNetworkError = isNetworkError,
                 lazyPagingItems = lazyPagingItems,
+                uiState = uiState,
                 onPhotoClick = onPhotoClick,
                 onLoadPopularPhotos = onLoadPopularPhotos,
                 onSearchQueryChange = onSearchQueryChange,
@@ -258,16 +303,20 @@ private fun PhotoListContent(
  * Renders the content based on the paging state.
  *
  * @param pagingState The current [PagingState].
+ * @param isNetworkError Whether the error is network-related.
  * @param lazyPagingItems The [LazyPagingItems] containing the photos.
+ * @param uiState The UI state to determine retry action (popular vs search).
  * @param onPhotoClick Callback invoked when a photo is clicked, passing the photo ID.
  * @param onLoadPopularPhotos Callback to load popular curated photos.
- * @param onSearchQueryChange Callback to clear search query.
+ * @param onSearchQueryChange Callback to clear search query or retry search.
  * @param modifier The modifier for the composable.
  */
 @Composable
 private fun PagingContent(
     pagingState: PagingState,
+    isNetworkError: Boolean,
     lazyPagingItems: LazyPagingItems<Photo>,
+    uiState: PhotoListUiState,
     onPhotoClick: (Int) -> Unit,
     onLoadPopularPhotos: () -> Unit,
     onSearchQueryChange: (String) -> Unit,
@@ -275,11 +324,38 @@ private fun PagingContent(
 ) {
     when (pagingState) {
         is PagingState.Loading -> LoadingState(modifier)
-        is PagingState.Error -> ErrorState(
-            error = pagingState.throwable,
-            onRetry = { lazyPagingItems.retry() },
-            modifier = modifier
-        )
+        is PagingState.Error -> {
+            // Show Network Stub if network error and no cached data
+            if (isNetworkError && lazyPagingItems.itemCount == 0) {
+                NetworkStub(
+                    onTryAgainClick = {
+                        // Retry based on current query: popular photos or search
+                        if (uiState.searchQuery.isNotEmpty()) {
+                            // Retry search with same query
+                            lazyPagingItems.retry()
+                        } else {
+                            // Retry popular photos
+                            onLoadPopularPhotos()
+                        }
+                    },
+                    modifier = modifier
+                )
+            } else if (lazyPagingItems.itemCount == 0) {
+                // Non-network error with no data - show generic error state
+                ErrorState(
+                    error = pagingState.throwable,
+                    onRetry = { lazyPagingItems.retry() },
+                    modifier = modifier
+                )
+            } else {
+                // Error but cached data exists - show cached data
+                PhotoGrid(
+                    lazyPagingItems = lazyPagingItems,
+                    onPhotoClick = onPhotoClick,
+                    modifier = modifier
+                )
+            }
+        }
 
         is PagingState.Empty -> NoResultsStub(
             onExploreClick = onLoadPopularPhotos,

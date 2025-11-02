@@ -43,6 +43,9 @@
   <string name="error_generic">An error occurred</string>
   <string name="error_unknown">An unknown error occurred</string>
   <string name="error_network">Network error: Please check your connection and try again.</string>
+  <string name="error_network_no_connection">No internet connection. Showing cached data.</string>
+  <string name="error_network_unstable">Connection is unstable. Please try again.</string>
+  <string name="error_network_try_again">Try again</string>
 
   <!-- Photo Loading Errors -->
   <string name="error_photo_list_load_failed">Failed to load photos</string>
