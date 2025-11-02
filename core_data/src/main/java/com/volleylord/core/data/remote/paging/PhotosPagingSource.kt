@@ -2,6 +2,7 @@ package com.volleylord.core.data.remote.paging
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.volleylord.core.core.network.NetworkErrorUtils
 import com.volleylord.core.data.local.dao.PhotoDao
 import com.volleylord.core.data.mappers.PhotoMapper
 import com.volleylord.core.data.remote.api.PhotosApi
@@ -18,25 +19,47 @@ class PhotosPagingSource(
   private val photoDao: PhotoDao
 ) : PagingSource<Int, Photo>() {
 
+  companion object {
+    private const val QUERY_TYPE_CURATED = "" // Empty string for curated/popular photos
+    private const val CACHE_VALIDITY_HOURS = 1L
+    private const val CACHE_VALIDITY_MILLIS = CACHE_VALIDITY_HOURS * 60 * 60 * 1000
+  }
+
   /**
    * Loads a page of photos from the API.
+   * On network errors, attempts to load from cache if available (for page 1 only).
    *
    * @param params The parameters for loading the page, including page size.
    * @return A [LoadResult] containing the loaded photos, next/previous keys, or an error.
    */
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Photo> {
     val page = params.key ?: 1
+    val currentTime = System.currentTimeMillis()
+    
     return try {
       val apiKey = settingsRepository.getApiKey()?.value
         ?: return LoadResult.Error(Exception("API key not found"))
 
+      // Before making network request, clear expired cache but keep valid cache
+      if (page == 1) {
+        photoDao.clearExpiredCache(currentTime, CACHE_VALIDITY_MILLIS)
+        // Only clear curated cache if we successfully get new data
+        // Don't clear it here - we'll clear it after successful load
+      }
+
       val response = photosApi.getPhotos(apiKey, page, params.loadSize)
       val photos = response.photos.map { photoMapper.mapDtoToDomain(it) }
 
+      // Save to cache with queryType = "" for curated photos
+      // Only save first page to cache (limit to 30 photos for curated)
       if (page == 1) {
-        photoDao.clearAllPhotos()
+        // Clear old curated cache only after successful load
+        photoDao.clearCacheForQuery(QUERY_TYPE_CURATED)
+        val photosToCache = photos.take(30) // Cache only first 30 curated photos
+        photoDao.insertPhotos(
+          photosToCache.map { photoMapper.mapDomainToEntity(it, QUERY_TYPE_CURATED, currentTime) }
+        )
       }
-      photoDao.insertPhotos(photos.map { photoMapper.mapDomainToEntity(it) })
 
       LoadResult.Page(
         data = photos,
@@ -44,8 +67,29 @@ class PhotosPagingSource(
         nextKey = if (response.nextPage == null) null else page + 1
       )
     } catch (exception: Exception) {
-      // Any exception thrown in the try block (network, parsing, DB, etc.)
-      // is caught here and converted into a state that the UI can handle.
+      // On network error for first page, try to load from cache BEFORE clearing
+      if (page == 1 && NetworkErrorUtils.isNetworkError(exception)) {
+        // Clear expired cache but keep valid cache
+        photoDao.clearExpiredCache(currentTime, CACHE_VALIDITY_MILLIS)
+        
+        // Try to load valid cache for curated photos
+        val cachedPhotos = photoDao.getCachedPhotosByQuery(
+          QUERY_TYPE_CURATED,
+          currentTime,
+          CACHE_VALIDITY_MILLIS
+        )
+        
+        if (cachedPhotos.isNotEmpty()) {
+          val photos = cachedPhotos.map { photoMapper.mapEntityToDomain(it) }
+          return LoadResult.Page(
+            data = photos,
+            prevKey = null,
+            nextKey = null // No pagination for cached data
+          )
+        }
+      }
+      
+      // If no cache available or not a network error, return error
       return LoadResult.Error(exception)
     }
   }

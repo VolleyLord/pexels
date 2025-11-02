@@ -98,8 +98,9 @@ class PhotosRepositoryImpl @Inject constructor(
 
       val response = api.getPhoto(apiKey = apiKey, id = photoId)
       val freshPhoto = mapper.mapDtoToDomain(response)
+      val currentTime = System.currentTimeMillis()
 
-      dao.insertPhotos(listOf(mapper.mapDomainToEntity(freshPhoto)))
+      dao.insertPhotos(listOf(mapper.mapDomainToEntity(freshPhoto, "", currentTime)))
 
       val updatedPhotoEntity = dao.getPhotoById(photoId)
       if (updatedPhotoEntity != null) {

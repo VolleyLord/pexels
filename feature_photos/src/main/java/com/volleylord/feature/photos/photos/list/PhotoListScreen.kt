@@ -227,6 +227,14 @@ private fun PhotoListContent(
             SearchBar(
                 query = uiState.searchQuery,
                 onQueryChange = onSearchQueryChange,
+                onSearchClick = {
+                    // Trigger search when IME action is pressed
+                    // Search already happens automatically on text change,
+                    // but this ensures it works when user presses search button
+                    if (uiState.searchQuery.isNotEmpty()) {
+                        onSearchQueryChange(uiState.searchQuery)
+                    }
+                },
                 searchIconResId = if (searchIconResId != 0) searchIconResId else android.R.drawable.ic_menu_search,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -254,8 +262,11 @@ private fun PhotoListContent(
                 )
             }
 
-            // Show FeaturedCollections only when not searching
-            if (!isSearching) {
+            // Show FeaturedCollections when not searching OR when showing Network Stub
+            // (Network Stub means no cached data, but headers should still be visible)
+            val showHeaders = !isSearching || (isNetworkError && lazyPagingItems.itemCount == 0)
+            
+            if (showHeaders) {
                 FeaturedCollections(
                     collections = uiState.featuredCollections,
                     onCollectionClick = onCollectionClick,
@@ -269,7 +280,7 @@ private fun PhotoListContent(
                 )
 
                 // Show progress bar below FeaturedCollections if loading and headers are visible
-                if (isLoading) {
+                if (isLoading && !isSearching) {
                     LinearProgressIndicator(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -331,11 +342,11 @@ private fun PagingContent(
                     onTryAgainClick = {
                         // Retry based on current query: popular photos or search
                         if (uiState.searchQuery.isNotEmpty()) {
-                            // Retry search with same query
-                            lazyPagingItems.retry()
+                            // Retry search with same query - use refresh to force reload
+                            lazyPagingItems.refresh()
                         } else {
-                            // Retry popular photos
-                            onLoadPopularPhotos()
+                            // Retry popular photos - refresh will trigger popular photos load
+                            lazyPagingItems.refresh()
                         }
                     },
                     modifier = modifier
