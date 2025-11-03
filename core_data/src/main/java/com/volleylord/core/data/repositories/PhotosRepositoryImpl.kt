@@ -8,6 +8,7 @@ import com.volleylord.core.core.network.NetworkResult
 import com.volleylord.core.data.local.dao.PhotoDao
 import com.volleylord.core.data.mappers.PhotoMapper
 import com.volleylord.core.data.remote.api.PhotosApi
+import com.volleylord.core.data.remote.paging.BookmarksPagingSource
 import com.volleylord.core.data.remote.paging.PhotosPagingSource
 import com.volleylord.core.data.remote.paging.SearchPhotosPagingSource
 import com.volleylord.core.domain.models.Photo
@@ -113,6 +114,59 @@ class PhotosRepositoryImpl @Inject constructor(
         emit(NetworkResult.Error(e.message ?: "Unknown error occurred"))
       } else {
         emit(NetworkResult.Success(mapper.mapEntityToDomain(cachedPhotoEntity)))
+      }
+    }
+  }
+
+  /**
+   * Retrieves a paginated list of bookmarked photos from the local database.
+   *
+   * @return A [Flow] of [PagingData] containing [Photo] objects.
+   */
+  override fun getBookmarks(): Flow<PagingData<Photo>> {
+    return Pager(
+      config = PagingConfig(
+        pageSize = Constants.PAGE_SIZE,
+        enablePlaceholders = false
+      ),
+      pagingSourceFactory = {
+        BookmarksPagingSource(dao, mapper)
+      }
+    ).flow
+  }
+
+  /**
+   * Toggles the bookmark status of a photo.
+   *
+   * @param photoId The ID of the photo to bookmark/unbookmark.
+   * @param isBookmarked Whether the photo should be bookmarked.
+   */
+  override suspend fun toggleBookmark(photoId: Int, isBookmarked: Boolean) {
+    dao.updateBookmarkStatus(photoId, isBookmarked)
+    
+    // If bookmarking, ensure the photo exists in the database
+    // If it doesn't exist, we need to fetch it from API first
+    if (isBookmarked) {
+      val existingPhoto = dao.getPhotoById(photoId)
+      if (existingPhoto == null) {
+        // Photo doesn't exist, need to fetch from API first
+        try {
+          val apiKey = settingsRepository.getApiKey()?.value
+          if (!apiKey.isNullOrBlank()) {
+            val response = api.getPhoto(apiKey = apiKey, id = photoId)
+            val photo = mapper.mapDtoToDomain(response)
+            val currentTime = System.currentTimeMillis()
+            dao.insertPhotos(
+              listOf(mapper.mapDomainToEntity(photo, "", currentTime, isBookmarked = true))
+            )
+          }
+        } catch (e: Exception) {
+          // If API fetch fails, just update the bookmark status if photo exists
+          e.printStackTrace()
+        }
+      } else {
+        // Photo exists, just update bookmark status
+        dao.updateBookmarkStatus(photoId, true)
       }
     }
   }

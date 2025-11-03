@@ -90,7 +90,9 @@ private sealed class PagingState {
 @Composable
 fun PhotoListScreen(
     viewModel: PhotoListViewModel,
-    onPhotoClick: (Int) -> Unit
+    onPhotoClick: (Int) -> Unit,
+    onNavigateToBookmarks: () -> Unit = {},
+    selectedTab: Int = 0
 ) {
     val lazyPagingItems = viewModel.photos.collectAsLazyPagingItems()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -107,8 +109,12 @@ fun PhotoListScreen(
         containerColor = com.volleylord.core.ui.theme.White, // Белый фон
         bottomBar = {
             com.volleylord.core.ui.components.BottomBar(
-                selectedTab = 0, // TODO: manage through state/navigation
-                onTabSelected = { /* TODO: navigate to tab */ },
+                selectedTab = selectedTab,
+                onTabSelected = { tabIndex ->
+                    if (tabIndex == 1) {
+                        onNavigateToBookmarks()
+                    }
+                },
                 homeIconActiveResId = if (homeIconActiveResId != 0) homeIconActiveResId else android.R.drawable.ic_menu_recent_history,
                 homeIconInactiveResId = if (homeIconInactiveResId != 0) homeIconInactiveResId else android.R.drawable.ic_menu_recent_history,
                 bookmarkIconActiveResId = if (bookmarkIconActiveResId != 0) bookmarkIconActiveResId else android.R.drawable.star_big_on,

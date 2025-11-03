@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.volleylord.feature.photos.photos.detail.PhotoDetailScreen
 import com.volleylord.feature.photos.photos.list.PhotoListScreen
+import com.volleylord.feature_bookmarks.bookmarks.BookmarksScreen
 
 /**
  * Sets up the main navigation graph of the app using Jetpack Navigation and Hilt.
@@ -27,6 +28,37 @@ fun AppNavigation(startDestination: AppDestination) {
         viewModel = hiltViewModel(),
         onPhotoClick = { photoId ->
           navController.navigate(PhotoDetailDestination(photoId))
+        },
+        onNavigateToBookmarks = {
+          navController.navigate(BookmarksDestination) {
+            popUpTo(PhotoListDestination) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+          }
+        },
+        selectedTab = 0
+      )
+    }
+
+    composable<BookmarksDestination> {
+      BookmarksScreen(
+        viewModel = hiltViewModel(),
+        onPhotoClick = { photoId ->
+          navController.navigate(PhotoDetailDestination(photoId, isFromBookmarks = true))
+        },
+        onExploreClick = {
+          navController.navigate(PhotoListDestination) {
+            popUpTo(BookmarksDestination) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+          }
+        },
+        onNavigateToHome = {
+          navController.navigate(PhotoListDestination) {
+            popUpTo(BookmarksDestination) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+          }
         }
       )
     }

@@ -96,4 +96,41 @@ interface PhotoDao {
    */
   @Query("DELETE FROM photos WHERE queryType = :queryType")
   suspend fun clearCacheForQuery(queryType: String)
+
+  /**
+   * Retrieves all bookmarked photos from the database, ordered by ID in descending order.
+   * Used for pagination with page size 30.
+   *
+   * @param limit Maximum number of photos to retrieve.
+   * @param offset Number of photos to skip (for pagination).
+   * @return List of bookmarked [PhotoEntity] objects.
+   */
+  @Query("SELECT * FROM photos WHERE isBookmarked = 1 ORDER BY id DESC LIMIT :limit OFFSET :offset")
+  suspend fun getBookmarkedPhotos(limit: Int, offset: Int): List<PhotoEntity>
+
+  /**
+   * Gets the total count of bookmarked photos.
+   *
+   * @return The count of bookmarked photos.
+   */
+  @Query("SELECT COUNT(*) FROM photos WHERE isBookmarked = 1")
+  suspend fun getBookmarkedPhotosCount(): Int
+
+  /**
+   * Checks if a photo is bookmarked.
+   *
+   * @param photoId The ID of the photo to check.
+   * @return true if the photo is bookmarked, false otherwise.
+   */
+  @Query("SELECT isBookmarked FROM photos WHERE id = :photoId")
+  suspend fun isPhotoBookmarked(photoId: Int): Boolean?
+
+  /**
+   * Updates the bookmark status of a photo.
+   *
+   * @param photoId The ID of the photo.
+   * @param isBookmarked The new bookmark status.
+   */
+  @Query("UPDATE photos SET isBookmarked = :isBookmarked WHERE id = :photoId")
+  suspend fun updateBookmarkStatus(photoId: Int, isBookmarked: Boolean)
 }
