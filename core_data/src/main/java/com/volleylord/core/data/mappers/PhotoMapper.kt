@@ -75,7 +75,7 @@ class PhotoMapper @Inject constructor() {
       thumbnailUrl = entity.thumbnailUrl,
       tinyThumbnailUrl = entity.tinyThumbnailUrl,
       largeImageUrl = entity.largeImageUrl,
-      liked = null, // 'liked' is not stored in the database
+      liked = entity.isBookmarked, // Map isBookmarked to liked
       alt = entity.alt
     )
   }
@@ -91,7 +91,8 @@ class PhotoMapper @Inject constructor() {
   fun mapDomainToEntity(
     domain: Photo,
     queryType: String = "",
-    cachedAt: Long = System.currentTimeMillis()
+    cachedAt: Long = System.currentTimeMillis(),
+    isBookmarked: Boolean = domain.liked ?: false
   ): PhotoEntity {
     return PhotoEntity(
       id = domain.id,
@@ -107,7 +108,8 @@ class PhotoMapper @Inject constructor() {
       largeImageUrl = domain.largeImageUrl,
       alt = domain.alt,
       queryType = queryType,
-      cachedAt = cachedAt
+      cachedAt = cachedAt,
+      isBookmarked = isBookmarked
     )
   }
 

@@ -33,4 +33,19 @@ interface PhotosRepository {
    * @return A [Flow] emitting a [NetworkResult] containing the [Photo] or an error.
    */
   fun getPhotoDetail(photoId: Int, isFromBookmarks: Boolean = false): Flow<NetworkResult<Photo>>
+
+  /**
+   * Retrieves a paginated list of bookmarked photos from the local database.
+   *
+   * @return A [Flow] of [PagingData] containing [Photo] objects.
+   */
+  fun getBookmarks(): Flow<PagingData<Photo>>
+
+  /**
+   * Toggles the bookmark status of a photo.
+   *
+   * @param photoId The ID of the photo to bookmark/unbookmark.
+   * @param isBookmarked Whether the photo should be bookmarked.
+   */
+  suspend fun toggleBookmark(photoId: Int, isBookmarked: Boolean)
 }

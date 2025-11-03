@@ -25,3 +25,9 @@ data class PhotoDetailDestination(
     val photoId: Int,
     val isFromBookmarks: Boolean = false
 ): AppDestination
+
+/**
+ * Navigation destination for the bookmarks screen.
+ */
+@Serializable
+data object BookmarksDestination: AppDestination

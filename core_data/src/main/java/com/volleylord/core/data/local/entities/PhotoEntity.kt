@@ -35,5 +35,7 @@ data class PhotoEntity(
   /** Timestamp when the photo was cached (in milliseconds since epoch). */
   val cachedAt: Long = System.currentTimeMillis(),
   /** Query type: empty string for curated/popular photos, or search query. */
-  val queryType: String = ""
+  val queryType: String = "",
+  /** Whether this photo is bookmarked/saved by the user. */
+  val isBookmarked: Boolean = false
 )

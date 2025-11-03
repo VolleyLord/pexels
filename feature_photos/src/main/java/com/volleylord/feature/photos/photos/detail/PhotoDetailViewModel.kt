@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.volleylord.core.core.network.NetworkResult
 import com.volleylord.core.domain.models.Photo
 import com.volleylord.core.domain.usecases.photos.GetPhotoDetailUseCase
+import com.volleylord.core.domain.usecases.photos.ToggleBookmarkUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +26,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PhotoDetailViewModel @Inject constructor(
-    private val getPhotoDetailUseCase: GetPhotoDetailUseCase
+    private val getPhotoDetailUseCase: GetPhotoDetailUseCase,
+    private val toggleBookmarkUseCase: ToggleBookmarkUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<PhotoDetailUiState>(PhotoDetailUiState.Loading)
@@ -92,7 +94,11 @@ class PhotoDetailViewModel @Inject constructor(
 
     fun toggleBookmark(photo: Photo) {
         viewModelScope.launch {
-            val updatedPhoto = photo.copy(liked = !(photo.liked ?: false))
+            val newBookmarkStatus = !(photo.liked ?: false)
+            // Update bookmark status in database
+            toggleBookmarkUseCase(photo.id, newBookmarkStatus)
+            // Update UI state
+            val updatedPhoto = photo.copy(liked = newBookmarkStatus)
             _uiState.value = PhotoDetailUiState.Success(updatedPhoto)
         }
     }

@@ -43,6 +43,7 @@ android {
 
 dependencies {
   implementation(project(":feature_photos"))
+  implementation(project(":feature_bookmarks"))
   implementation(project(":feature_splash"))
   implementation(project(":core_domain" ))
   implementation(project(":core_data"))

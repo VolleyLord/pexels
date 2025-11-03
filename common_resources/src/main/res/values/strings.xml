@@ -62,6 +62,14 @@
 
 
   <!-- =================================================================================== -->
+  <!-- Bookmarks Screen                                                                    -->
+  <!-- =================================================================================== -->
+  <string name="bookmarks_screen_title">Bookmarks</string>
+  <string name="bookmarks_empty_title">You haven\'t saved anything yet</string>
+  <string name="bookmarks_empty_explore">Explore</string>
+  <string name="bookmarks_loading_message">Loading bookmarks…</string>
+
+  <!-- =================================================================================== -->
   <!-- Content Descriptions (For accessibility)                                            -->
   <!-- =================================================================================== -->
   <string name="content_description_navigate_back">Navigate Back</string>
