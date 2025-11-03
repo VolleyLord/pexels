@@ -13,13 +13,13 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -116,79 +116,81 @@ fun BookmarksScreen(
 
 @Composable
 private fun BookmarksContent(
-  lazyPagingItems: LazyPagingItems<Photo>,
-  onPhotoClick: (Int) -> Unit,
-  onExploreClick: () -> Unit,
-  modifier: Modifier = Modifier
+    lazyPagingItems: LazyPagingItems<Photo>,
+    onPhotoClick: (Int) -> Unit,
+    onExploreClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-  val configuration = LocalConfiguration.current
-  val baseScreenWidth = 375
-  val screenWidth = configuration.screenWidthDp
-  val scale = screenWidth.toFloat() / baseScreenWidth
+    val configuration = LocalConfiguration.current
+    val baseScreenWidth = 375
+    val screenWidth = configuration.screenWidthDp
+    val scale = screenWidth.toFloat() / baseScreenWidth
 
-  val titleTop = (69 * scale).dp
-  val titleLeft = (140 * scale).dp
-  val imagesTop = (130 * scale).dp
-  val imagesLeft = (24 * scale).dp
-  val imagesWidth = (327 * scale).dp
+    val titleTop = (69 * scale).dp
+    val titleLeft = (140 * scale).dp
+    val titleWidth = (130 * scale).dp
+    val imagesTop = (130 * scale).dp
+    val imagesLeft = (24 * scale).dp
+    val imagesWidth = (327 * scale).dp
 
-  val isLoading = lazyPagingItems.loadState.refresh is LoadState.Loading
-  val isEmpty = lazyPagingItems.itemCount == 0 && 
-                lazyPagingItems.loadState.refresh !is LoadState.Loading &&
-                lazyPagingItems.loadState.refresh !is LoadState.Error
+    val isLoading = lazyPagingItems.loadState.refresh is LoadState.Loading
+    val isEmpty = lazyPagingItems.itemCount == 0 &&
+            lazyPagingItems.loadState.refresh is LoadState.NotLoading &&
+            lazyPagingItems.loadState.append !is LoadState.Loading
 
-  Column(
-    modifier = modifier.fillMaxSize()
-  ) {
-    // Title: "Bookmarks"
-    Box(
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(top = titleTop, start = titleLeft)
-    ) {
-      Text(
-        text = stringResource(R.string.bookmarks_screen_title),
-        fontSize = (23 * scale).sp,
-        fontWeight = FontWeight.Bold,
-        color = Color.Black
-      )
-    }
+    Column(modifier = modifier.fillMaxSize()) {
+        Spacer(modifier = Modifier.height(titleTop))
 
-    // Progress bar between title and images during loading
-    if (isLoading && !isEmpty) {
-      LinearProgressIndicator(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = imagesLeft, vertical = 8.dp),
-        color = PrimaryRed,
-        trackColor = LightGray
-      )
-    }
-
-    // Content: Grid or Empty State
-    Box(
-      modifier = Modifier
-        .fillMaxSize()
-        .padding(top = imagesTop, start = imagesLeft, end = imagesLeft)
-    ) {
-      when {
-        isEmpty -> {
-          EmptyBookmarksStub(
-            onExploreClick = onExploreClick,
-            modifier = Modifier.fillMaxSize()
-          )
+        Box(
+            modifier = Modifier
+                .offset(x = titleLeft)
+                .width(titleWidth)
+        ) {
+            Text(
+                text = stringResource(R.string.bookmarks_screen_title),
+                fontSize = (23 * scale).sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
         }
-        else -> {
-          BookmarksGrid(
-            lazyPagingItems = lazyPagingItems,
-            onPhotoClick = onPhotoClick,
-            modifier = Modifier.fillMaxSize()
-          )
+
+        Spacer(modifier = Modifier.height((imagesTop - titleTop - 23.dp).coerceAtLeast(0.dp)))
+
+        if (isLoading && !isEmpty) {
+            LinearProgressIndicator(
+                modifier = Modifier
+                    .width(imagesWidth)
+                    .align(Alignment.CenterHorizontally)
+                    .padding(vertical = 8.dp),
+                color = PrimaryRed,
+                trackColor = LightGray
+            )
         }
-      }
+
+        Box(
+            modifier = Modifier
+                .width(imagesWidth)
+                .align(Alignment.CenterHorizontally)
+        ) {
+            when {
+                isEmpty -> {
+                    EmptyBookmarksStub(
+                        onExploreClick = onExploreClick,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+                else -> {
+                    BookmarksGrid(
+                        lazyPagingItems = lazyPagingItems,
+                        onPhotoClick = onPhotoClick,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
+        }
     }
-  }
 }
+
 
 @Composable
 private fun BookmarksGrid(
@@ -201,8 +203,10 @@ private fun BookmarksGrid(
   val screenWidth = configuration.screenWidthDp
   val scale = screenWidth.toFloat() / baseScreenWidth
 
-  val imageWidth = (155 * scale).dp
+  val contentWidth = (327 * scale).dp
   val gap = 10.dp
+  val itemWidthPx = with(LocalDensity.current) { (contentWidth - gap).toPx() / 2f }
+  val itemWidth = with(LocalDensity.current) { itemWidthPx.toDp() }
 
   LazyVerticalStaggeredGrid(
     columns = StaggeredGridCells.Fixed(2),
@@ -217,24 +221,22 @@ private fun BookmarksGrid(
       val photo = lazyPagingItems[index]
 
       if (photo != null) {
-        val aspectRatio = if (photo.width != null && photo.height != null) {
+        val aspectRatio = if (photo.width != null && photo.height != null && photo.height != 0) {
           photo.width!!.toFloat() / photo.height!!.toFloat()
-        } else {
-          1f
-        }
+        } else 1f
 
         BookmarkPhotoItem(
           photo = photo,
           onClick = { onPhotoClick(photo.id) },
           modifier = Modifier
-            .width(imageWidth)
+            .width(itemWidth)
             .aspectRatio(aspectRatio)
         )
       } else {
         // Shimmer loading placeholder
         ShimmerBookmarkPhotoItem(
           modifier = Modifier
-            .width(imageWidth)
+            .width(itemWidth)
             .aspectRatio(1f)
         )
       }

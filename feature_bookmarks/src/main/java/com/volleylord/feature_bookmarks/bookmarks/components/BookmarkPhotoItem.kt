@@ -1,5 +1,6 @@
 package com.volleylord.feature_bookmarks.bookmarks.components
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -38,6 +39,7 @@ import com.volleylord.core.ui.image.AsyncImageWithPlaceholder
  * @param onClick Callback invoked when the photo is clicked.
  * @param modifier The modifier for the composable.
  */
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun BookmarkPhotoItem(
   photo: Photo,
@@ -51,15 +53,11 @@ fun BookmarkPhotoItem(
 
   val imageWidth = (155 * scale).dp
   val authorHeight = (33 * scale).dp
-  val authorPadding = 6.dp
+  val authorPadding = 0.dp
   val cornerRadius = 8.dp
 
   val placeholderColor = photo.avgColor ?: Color.LightGray
-  val aspectRatio = if (photo.width != null && photo.height != null) {
-    photo.width!!.toFloat() / photo.height!!.toFloat()
-  } else {
-    1f
-  }
+  // Aspect ratio is controlled by parent grid for consistent rows
 
   Column(
     modifier = modifier
@@ -69,7 +67,7 @@ fun BookmarkPhotoItem(
     Card(
       modifier = Modifier
         .width(imageWidth)
-        .aspectRatio(aspectRatio),
+        .fillMaxWidth(),
       elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
       AsyncImageWithPlaceholder(
@@ -106,7 +104,7 @@ fun BookmarkPhotoItem(
             color = Color.Black.copy(alpha = 0.4f),
             shape = RoundedCornerShape(4.dp)
           )
-          .padding(horizontal = 8.dp, vertical = 6.dp)
+          .padding(horizontal = 0.dp, vertical = 6.dp)
       )
     }
   }
