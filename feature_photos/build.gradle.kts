@@ -53,6 +53,7 @@ dependencies {
   implementation(libs.androidx.lifecycle.runtimeCompose)
   implementation(libs.androidx.glance.appwidget)
   implementation(libs.androidx.material.icons.extended)
+    implementation("androidx.compose.ui:ui:1.5.0")
 
   // Coil
   implementation(libs.coil.compose)
