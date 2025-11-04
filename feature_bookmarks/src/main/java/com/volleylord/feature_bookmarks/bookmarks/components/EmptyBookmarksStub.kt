@@ -56,7 +56,6 @@ fun EmptyBookmarksStub(
       modifier = Modifier.width(containerWidth),
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
-      // Title: "You haven't saved anything yet"
       Text(
         text = stringResource(R.string.bookmarks_empty_title),
         fontSize = (14 * scale).sp,

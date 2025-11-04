@@ -1,14 +1,11 @@
 package com.volleylord.core.data.downloader
 
+import android.app.DownloadManager
 import android.content.Context
-import android.os.Build
+import android.net.Uri
 import android.os.Environment
 import com.volleylord.core.domain.models.Photo
 import com.volleylord.core.domain.services.PhotoDownloader
-import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStream
-import java.net.URL
 import javax.inject.Inject
 
 class DefaultPhotoDownloader @Inject constructor() : PhotoDownloader {
@@ -16,35 +13,17 @@ class DefaultPhotoDownloader @Inject constructor() : PhotoDownloader {
     val imageUrl = photo.largeImageUrl ?: photo.thumbnailUrl ?: return
 
     val fileName = "pexels_${photo.id}.jpg"
-    val file: File = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      val downloadsDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-        ?: context.filesDir
-      File(downloadsDir, fileName)
-    } else {
-      val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-      if (!downloadsDir.exists()) downloadsDir.mkdirs()
-      File(downloadsDir, fileName)
-    }
 
-    val url = URL(imageUrl)
-    val connection = url.openConnection()
-    connection.connect()
+    val request = DownloadManager.Request(Uri.parse(imageUrl))
+      .setTitle(fileName)
+      .setDescription("Downloading photo")
+      .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+      .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
+      .setAllowedOverMetered(true)
+      .setAllowedOverRoaming(true)
 
-    val input: InputStream = connection.getInputStream()
-    val output = FileOutputStream(file)
-
-    input.use { inp ->
-      output.use { out -> inp.copyTo(out) }
-    }
-
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      android.media.MediaScannerConnection.scanFile(
-        context,
-        arrayOf(file.absolutePath),
-        null,
-        null
-      )
-    }
+    val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+    dm.enqueue(request)
   }
 }
 

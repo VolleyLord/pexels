@@ -7,4 +7,3 @@ interface PhotoDownloader {
   suspend fun download(context: Context, photo: Photo)
 }
 
-

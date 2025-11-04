@@ -1,5 +1,6 @@
-package com.volleylord.feature_splash
+package com.volleylord.feature_splash.presentation.splash
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,7 +16,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -23,12 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.volleylord.core.ui.theme.PrimaryRed
 
-/**
- * Splash screen composable that displays app logo and branding.
- *
- * @param modifier Modifier for the composable.
- * @param iconResId
- */
 @Composable
 fun SplashScreen(
     modifier: Modifier = Modifier,
@@ -36,8 +30,7 @@ fun SplashScreen(
 ) {
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
-    
-    // base elements sizes
+
     val baseScreenWidth = 375
     val baseScreenHeight = 812
 
@@ -51,35 +44,31 @@ fun SplashScreen(
     val baseIconLeftFromLogo = 45f
     val baseTextTopFromLogo = 146f
     val baseTextLeftFromLogo = 135f
-    
-    // scaling based on screen size
+
     val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
     val scale = minOf(
         screenWidth.toFloat() / baseScreenWidth,
         screenHeight.toFloat() / baseScreenHeight
     )
-    
-    // adaptive sizes
+
     val logoSplashWidth = (baseLogoSplashWidth * scale).dp
     val logoSplashHeight = (baseLogoSplashHeight * scale).dp
     val iconWidth = (baseIconWidth * scale).dp
     val iconHeight = (baseIconHeight * scale).dp
     val textSize = (baseTextFontSize * scale).sp
-    
-    // adaptive elements inside logo
+
     val iconOffsetX = (baseIconLeftFromLogo * scale).dp
     val iconOffsetY = (baseIconTopFromLogo * scale).dp
     val textOffsetX = (baseTextLeftFromLogo * scale).dp
     val textOffsetY = (baseTextTopFromLogo * scale).dp
-    
+
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(PrimaryRed),
         contentAlignment = Alignment.Center
     ) {
-        // Splash Logo Container
         Box(
             modifier = Modifier
                 .width(logoSplashWidth)
@@ -115,4 +104,5 @@ fun SplashScreen(
         }
     }
 }
+
 

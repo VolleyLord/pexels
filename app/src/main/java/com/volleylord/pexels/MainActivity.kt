@@ -18,8 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.volleylord.core.ui.theme.PexelsTheme
-import com.volleylord.feature_splash.SplashScreen
-import com.volleylord.feature_splash.SplashViewModel
+import com.volleylord.feature_splash.presentation.splash.SplashScreen
+import com.volleylord.feature_splash.presentation.splash.SplashViewModel
 import com.volleylord.pexels.navigation.AppNavigation
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -70,7 +70,7 @@ class MainActivity : ComponentActivity() {
         
         // once splash screen is ready, switch to ViewModel
         LaunchedEffect(splashUiState) {
-          if (splashUiState is com.volleylord.feature_splash.SplashUiState.Ready) {
+          if (splashUiState is com.volleylord.feature_splash.presentation.splash.SplashUiState.Ready) {
             viewModel.onSplashReady()
           }
         }

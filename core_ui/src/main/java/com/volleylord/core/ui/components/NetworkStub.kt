@@ -36,22 +36,18 @@ fun NetworkStub(
 ) {
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
-    val baseScreenWidth = 375 // Base screen width from Figma
+    val baseScreenWidth = 375
     val screenWidth = configuration.screenWidthDp
     val scale = screenWidth.toFloat() / baseScreenWidth
 
-    // Figma specs: container width: 125.53837585449219, height: 147
     val containerWidth = (125.53837585449219 * scale).dp
 
-    // Icon specs: width: 125.53837585449219, height: 100
     val iconWidth = (125.53837585449219 * scale).dp
     val iconHeight = (100 * scale).dp
 
-    // Text specs: width: 84, height: 23, font Mulish, weight 700, size 18px, line-height 100%
     val textWidth = (84 * scale).dp
     val textSize = (18 * scale).sp
 
-    // Get network_stub_icon drawable resource
     val networkIconResId = context.resources.getIdentifier(
         "network_stub_icon",
         "drawable",
@@ -65,7 +61,6 @@ fun NetworkStub(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Network stub icon
         Image(
             painter = androidx.compose.ui.res.painterResource(
                 id = if (networkIconResId != 0) networkIconResId else android.R.drawable.ic_dialog_info
@@ -77,14 +72,13 @@ fun NetworkStub(
             contentScale = ContentScale.Fit
         )
 
-        // "Try again" text button
         Text(
             text = stringResource(R.string.error_network_try_again),
             style = androidx.compose.material3.MaterialTheme.typography.bodyLarge.copy(
                 fontSize = textSize,
-                fontWeight = FontWeight.Bold, // 700
-                lineHeight = textSize, // 100% line height
-                letterSpacing = 0.sp // 0% letter spacing
+                fontWeight = FontWeight.Bold,
+                lineHeight = textSize,
+                letterSpacing = 0.sp
             ),
             color = PrimaryRed,
             textAlign = TextAlign.Center,

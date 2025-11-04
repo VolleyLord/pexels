@@ -71,7 +71,13 @@ fun AppNavigation(startDestination: AppDestination) {
         onBackClick = {
           navController.popBackStack()
         },
-        isFromBookmarks = args.isFromBookmarks
+        isFromBookmarks = args.isFromBookmarks,
+        onExploreClick = {
+          navController.navigate(PhotoListDestination) {
+            popUpTo(PhotoListDestination) { inclusive = false }
+            launchSingleTop = true
+          }
+        }
       )
     }
   }
