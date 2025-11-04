@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,7 +37,7 @@ import com.volleylord.core.ui.image.AsyncImageWithPlaceholder
  * @param onClick Callback invoked when the photo is clicked.
  * @param modifier The modifier for the composable.
  */
-@SuppressLint("ConfigurationScreenWidthHeight")
+
 @Composable
 fun BookmarkPhotoItem(
   photo: Photo,
@@ -53,13 +51,13 @@ fun BookmarkPhotoItem(
 
   val imageWidth = (155 * scale).dp
   val authorHeight = (33 * scale).dp
-  val authorPadding = 0.dp
+  val authorPadding = 6.dp
   val cornerRadius = 8.dp
 
   val placeholderColor = photo.avgColor ?: Color.LightGray
   // Aspect ratio is controlled by parent grid for consistent rows
 
-  Column(
+  Box(
     modifier = modifier
       .width(imageWidth)
       .clickable(onClick = onClick)
@@ -83,29 +81,56 @@ fun BookmarkPhotoItem(
       )
     }
 
-    // Author overlay
-    Box(
-      modifier = Modifier
-        .width(imageWidth)
-        .height(authorHeight)
-        .padding(horizontal = authorPadding, vertical = 0.dp),
-      contentAlignment = androidx.compose.ui.Alignment.CenterStart
-    ) {
-      Text(
-        text = photo.photographer ?: "",
-        fontSize = (14 * scale).sp,
-        fontWeight = FontWeight.Normal,
-        color = Color.White,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-        modifier = Modifier
-          .fillMaxWidth()
-          .background(
-            color = Color.Black.copy(alpha = 0.4f),
-            shape = RoundedCornerShape(4.dp)
-          )
-          .padding(horizontal = 0.dp, vertical = 6.dp)
-      )
-    }
+      // Inside Card → Box above image
+      Card(
+          modifier = Modifier
+              .width(imageWidth),
+          elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+          shape = RoundedCornerShape(cornerRadius)
+      ) {
+          Box(modifier = Modifier.fillMaxSize()) {
+              AsyncImageWithPlaceholder(
+                  imageUrl = photo.tinyThumbnailUrl,
+                  placeholder = ColorPainter(placeholderColor),
+                  contentDescription = stringResource(
+                      R.string.content_description_photo_item,
+                      photo.photographer ?: ""
+                  ),
+                  modifier = Modifier
+                      .fillMaxSize()
+                      .clip(RoundedCornerShape(cornerRadius))
+              )
+
+              //  Author overlay
+              Box(
+                  modifier = Modifier
+                      .fillMaxWidth()
+                      .height(authorHeight)
+                      .align(Alignment.BottomCenter),
+                  contentAlignment = Alignment.CenterStart
+              ) {
+                  Text(
+                      text = photo.photographer ?: "",
+                      fontSize = (14 * scale).sp,
+                      fontWeight = FontWeight.Normal,
+                      color = Color.White,
+                      maxLines = 1,
+                      overflow = TextOverflow.Ellipsis,
+                      modifier = Modifier
+                          .fillMaxWidth()
+                          .background(
+                              color = Color(0x000000).copy(alpha = 0.4f),
+                              shape = RoundedCornerShape(
+                                  topStart = 0.dp, topEnd = 0.dp,
+                                  bottomStart = cornerRadius,
+                                  bottomEnd = cornerRadius
+                              )
+                          )
+                          .padding(horizontal = 8.dp, vertical = 6.dp)
+                  )
+              }
+          }
+      }
   }
 }
+

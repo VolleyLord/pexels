@@ -1,4 +1,4 @@
-package com.volleylord.feature.photos.photos.detail
+package com.volleylord.feature.photos.presentation.details
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -50,15 +50,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
 import coil3.compose.SubcomposeAsyncImage
-import coil3.compose.rememberAsyncImagePainter
 import com.volleylord.core.domain.models.Photo
 import com.volleylord.core.ui.theme.LightGray
 import com.volleylord.core.ui.theme.PrimaryRed
 import com.volleylord.core.ui.theme.White
-import kotlin.math.max
-import kotlin.math.min
 
 @Composable
 fun PhotoDetailScreen(
@@ -415,13 +411,12 @@ private fun PhotoImageWithZoom(
         modifier = modifier
             .width(imageWidth)
             .height(imageHeight)
-            // .clip(RoundedCornerShape(12.dp))
             .pointerInput(Unit) {
                 detectTransformGestures { _, _, zoom, _ ->
                     isGestureActive = true
                     val newScale = (scale * zoom).coerceIn(1f, 3f)
                     scale = newScale
-                    
+
                     if (scale <= 1f) {
                         offsetX = 0f
                         offsetY = 0f
@@ -498,35 +493,35 @@ private fun ImageActionsBar(
             .height(actionsBarHeight),
         verticalAlignment = Alignment.CenterVertically
     ) {
-            DownloadButton(
-                width = downloadButtonWidth,
-                height = downloadButtonHeight,
-                iconSize = downloadIconSize,
-                iconArrowSize = downloadIconArrowSize,
-                iconResId = downloadIconResId,
-                onClick = onDownloadClick
-            )
+        DownloadButton(
+            width = downloadButtonWidth,
+            height = downloadButtonHeight,
+            iconSize = downloadIconSize,
+            iconArrowSize = downloadIconArrowSize,
+            iconResId = downloadIconResId,
+            onClick = onDownloadClick
+        )
 
-            Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.weight(1f))
 
-            Box(
-                modifier = Modifier
-                    .size(bookmarkButtonSize)
-                    .background(
-                        color = LightGray,
-                        shape = RoundedCornerShape(bookmarkButtonSize / 2)
-                    )
-                    .clickable(onClick = onBookmarkClick),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(id = bookmarkIconResId),
-                    contentDescription = "Bookmark",
-                    modifier = Modifier.size(bookmarkIconSize)
+        Box(
+            modifier = Modifier
+                .size(bookmarkButtonSize)
+                .background(
+                    color = LightGray,
+                    shape = RoundedCornerShape(bookmarkButtonSize / 2)
                 )
-            }
+                .clickable(onClick = onBookmarkClick),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = bookmarkIconResId),
+                contentDescription = "Bookmark",
+                modifier = Modifier.size(bookmarkIconSize)
+            )
         }
     }
+}
 
 @Composable
 private fun DownloadButton(
@@ -582,3 +577,5 @@ private fun DownloadButton(
         }
     }
 }
+
+
