@@ -17,9 +17,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.volleylord.common.R
 import com.volleylord.core.ui.theme.PrimaryRed
+import com.volleylord.core.ui.theme.PexelsTheme
 
 /**
  * Empty state stub for when there are no bookmarks.
@@ -28,6 +30,8 @@ import com.volleylord.core.ui.theme.PrimaryRed
  * @param onExploreClick Callback invoked when the "Explore" button is clicked.
  * @param modifier The modifier for the composable.
  */
+
+
 @Composable
 fun EmptyBookmarksStub(
   onExploreClick: () -> Unit,
@@ -55,7 +59,7 @@ fun EmptyBookmarksStub(
       // Title: "You haven't saved anything yet"
       Text(
         text = stringResource(R.string.bookmarks_empty_title),
-        fontSize = (16 * scale).sp,
+        fontSize = (14 * scale).sp,
         fontWeight = FontWeight.Normal,
         color = Color(0xFF333333),
         textAlign = TextAlign.Center,
@@ -75,5 +79,13 @@ fun EmptyBookmarksStub(
           .clickable(onClick = onExploreClick)
       )
     }
+  }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun EmptyBookmarksStubPreview() {
+  PexelsTheme {
+    EmptyBookmarksStub(onExploreClick = { })
   }
 }

@@ -1,15 +1,12 @@
-package com.volleylord.feature_bookmarks.bookmarks
+package com.volleylord.feature_bookmarks.presentation.bookmarks
 
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,19 +24,14 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.ui.platform.LocalContext
-import com.volleylord.core.ui.components.BottomBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -52,22 +44,15 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.volleylord.common.R
 import com.volleylord.core.domain.models.Photo
-import com.volleylord.core.ui.image.AsyncImageWithPlaceholder
+import com.volleylord.core.ui.components.BottomBar
+import com.volleylord.core.ui.components.shimmerEffect
 import com.volleylord.core.ui.theme.LightGray
 import com.volleylord.core.ui.theme.PrimaryRed
 import com.volleylord.core.ui.theme.White
+import com.volleylord.feature_bookmarks.presentation.bookmarks.BookmarksViewModel
 import com.volleylord.feature_bookmarks.bookmarks.components.BookmarkPhotoItem
 import com.volleylord.feature_bookmarks.bookmarks.components.EmptyBookmarksStub
 
-/**
- * Main screen for displaying bookmarked photos.
- * Based on Figma specs with adaptive sizing and pagination support.
- *
- * @param viewModel The ViewModel for managing bookmarks data.
- * @param onPhotoClick Callback invoked when a photo is clicked.
- * @param onExploreClick Callback invoked when "Explore" button is clicked in empty state.
- * @param modifier The modifier for the composable.
- */
 @Composable
 fun BookmarksScreen(
   viewModel: BookmarksViewModel = hiltViewModel(),
@@ -148,13 +133,13 @@ private fun BookmarksContent(
         ) {
             Text(
                 text = stringResource(R.string.bookmarks_screen_title),
-                fontSize = (23 * scale).sp,
+                fontSize = (18 * scale).sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
         }
 
-        Spacer(modifier = Modifier.height((imagesTop - titleTop - 23.dp).coerceAtLeast(0.dp)))
+        Spacer(modifier = Modifier.height((imagesTop - titleTop - 18.dp).coerceAtLeast(0.dp)))
 
         if (isLoading && !isEmpty) {
             LinearProgressIndicator(
@@ -171,6 +156,7 @@ private fun BookmarksContent(
             modifier = Modifier
                 .width(imagesWidth)
                 .align(Alignment.CenterHorizontally)
+                .fillMaxHeight()
         ) {
             when {
                 isEmpty -> {
@@ -190,7 +176,6 @@ private fun BookmarksContent(
         }
     }
 }
-
 
 @Composable
 private fun BookmarksGrid(
@@ -233,7 +218,6 @@ private fun BookmarksGrid(
             .aspectRatio(aspectRatio)
         )
       } else {
-        // Shimmer loading placeholder
         ShimmerBookmarkPhotoItem(
           modifier = Modifier
             .width(itemWidth)
@@ -242,7 +226,6 @@ private fun BookmarksGrid(
       }
     }
 
-    // Append loading state
     when (val appendState = lazyPagingItems.loadState.append) {
       is LoadState.Loading -> {
         item {
@@ -284,51 +267,33 @@ private fun BookmarksGrid(
 private fun ShimmerBookmarkPhotoItem(
   modifier: Modifier = Modifier
 ) {
-  val infiniteTransition = rememberInfiniteTransition(label = "shimmer")
-  val shimmerTranslate by infiniteTransition.animateFloat(
-    initialValue = 0f,
-    targetValue = 1000f,
-    animationSpec = infiniteRepeatable(
-      animation = tween(1000, easing = androidx.compose.animation.core.LinearEasing)
-    ),
-    label = "shimmer_translate"
-  )
-
-  val shimmerBrush = Brush.linearGradient(
-    colors = listOf(
-      Color.LightGray.copy(alpha = 0.6f),
-      Color.LightGray.copy(alpha = 0.2f),
-      Color.LightGray.copy(alpha = 0.6f)
-    ),
-    start = Offset(shimmerTranslate - 300f, shimmerTranslate - 300f),
-    end = Offset(shimmerTranslate, shimmerTranslate)
-  )
-
   Column(modifier = modifier) {
     Card(
       modifier = Modifier
         .fillMaxWidth()
-        .aspectRatio(1f),
-      elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        .aspectRatio(1f)
+        .shimmerEffect(120.dp),
+      elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+      shape = RoundedCornerShape(8.dp)
     ) {
-      Box(
-        modifier = Modifier
-          .fillMaxSize()
-          .background(shimmerBrush)
-          .clip(RoundedCornerShape(8.dp))
-      )
+      Box(modifier = Modifier.fillMaxSize())
     }
 
-    // Author shimmer placeholder
     Box(
       modifier = Modifier
         .fillMaxWidth()
         .height(33.dp)
-        .padding(horizontal = 6.dp, vertical = 0.dp)
         .background(
-          color = Color.LightGray.copy(alpha = 0.3f),
-          shape = RoundedCornerShape(4.dp)
-        )
-    )
+          color = PrimaryRed,
+          shape = RoundedCornerShape(
+            bottomStart = 8.dp,
+            bottomEnd = 8.dp
+          )
+        ),
+      contentAlignment = Alignment.Center
+    ) {
+    }
   }
 }
+
+

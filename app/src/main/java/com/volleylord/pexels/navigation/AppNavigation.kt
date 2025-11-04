@@ -6,9 +6,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.volleylord.feature.photos.photos.detail.PhotoDetailScreen
-import com.volleylord.feature.photos.photos.list.PhotoListScreen
-import com.volleylord.feature_bookmarks.bookmarks.BookmarksScreen
+import com.volleylord.feature.photos.presentation.details.PhotoDetailScreen
+import com.volleylord.feature.photos.presentation.home.PhotoListScreen
+import com.volleylord.feature_bookmarks.presentation.bookmarks.BookmarksScreen
 
 /**
  * Sets up the main navigation graph of the app using Jetpack Navigation and Hilt.
