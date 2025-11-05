@@ -20,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -37,9 +36,9 @@ import com.volleylord.core.ui.theme.Shapes
  * @param query The current search query text.
  * @param onQueryChange Callback when the search query changes.
  * @param onSearchClick Callback when search action is triggered (e.g., IME action or button click).
- * @param placeholder The placeholder text to display when the field is empty.
- * @param modifier Modifier to be applied to the search bar.
- * @param searchIconResId Resource ID (search_bar_icon).
+ * @param placeholder placeholder text
+ * @param modifier
+ * @param searchIconResId
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,17 +50,8 @@ fun SearchBar(
     modifier: Modifier = Modifier,
     searchIconResId: Int = android.R.drawable.ic_menu_search
 ) {
-    val configuration = LocalConfiguration.current
-
-    val baseScreenWidth = 375
-    val baseSearchBarHeight = 50
-    val baseIconSize = 16
-
-    val screenWidth = configuration.screenWidthDp
-    val scale = screenWidth.toFloat() / baseScreenWidth
-
-    val searchBarHeight = (baseSearchBarHeight * scale).dp
-    val iconSize = (baseIconSize * scale).dp
+    val searchBarHeight = 50.dp
+    val iconSize = 16.dp
 
     OutlinedTextField(
         value = query,
@@ -80,10 +70,7 @@ fun SearchBar(
         placeholder = {
             Text(
                 text = placeholder,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontSize = (14 * scale).sp,
-                    letterSpacing = (0.28 * scale).sp
-                ),
+                style = MaterialTheme.typography.bodyMedium,
                 color = Gray
             )
         },
@@ -108,7 +95,7 @@ fun SearchBar(
             }
         },
         singleLine = true,
-        shape = RoundedCornerShape(Shapes.medium),
+        shape = RoundedCornerShape(50.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedContainerColor = LightGray,
             unfocusedContainerColor = LightGray,

@@ -1,34 +1,32 @@
 package com.volleylord.feature.photos.presentation.details.components
 
+import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculatePan
+import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.calculatePan
-import androidx.compose.foundation.gestures.calculateZoom
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.ui.layout.onGloballyPositioned
-import com.volleylord.core.ui.theme.PrimaryRed
-import androidx.compose.ui.platform.LocalContext
-import android.widget.Toast
-import androidx.compose.foundation.gestures.awaitFirstDown
+import com.volleylord.core.ui.components.shimmerEffect
 
 
 @Composable
@@ -139,9 +137,9 @@ fun DetailsPhotoZoom(
         Box(
           modifier = Modifier
             .fillMaxWidth()
-            .height(fixedHeightDp.dp),
-          contentAlignment = Alignment.Center
-        ) { CircularProgressIndicator(color = PrimaryRed) }
+            .height(fixedHeightDp.dp)
+            .shimmerEffect(120.dp)
+        )
       },
       error = {
         Toast.makeText(context, "Failed to load image", Toast.LENGTH_SHORT).show()

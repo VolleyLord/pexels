@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -21,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.volleylord.core.ui.theme.ComponentSizes
@@ -31,13 +29,13 @@ import com.volleylord.core.ui.theme.White
 
 /**
  * Bottom navigation bar with home and bookmarks icons.
- * @param selectedTab The currently selected tab (0 = Home, 1 = Bookmarks).
- * @param onTabSelected Callback when a tab is selected.
- * @param modifier Modifier to be applied to the bottom bar.
- * @param homeIconActiveResId Resource ID (home_button_active).
- * @param homeIconInactiveResId Resource ID  (home_button_inactive).
- * @param bookmarkIconActiveResId Resource ID  (bookmark_active).
- * @param bookmarkIconInactiveResId Resource ID (bookmark_inactive).
+ * @param selectedTab (0 = Home, 1 = Bookmarks).
+ * @param onTabSelected Callback when a tab is selected
+ * @param modifier
+ * @param homeIconActiveResId
+ * @param homeIconInactiveResId
+ * @param bookmarkIconActiveResId
+ * @param bookmarkIconInactiveResId
  */
 @Composable
 fun BottomBar(
@@ -49,27 +47,9 @@ fun BottomBar(
     bookmarkIconActiveResId: Int = android.R.drawable.star_big_on,
     bookmarkIconInactiveResId: Int = android.R.drawable.star_big_off
 ) {
-    val configuration = LocalConfiguration.current
-
-    val baseScreenWidth = 375
-    val baseBottomBarHeight = 64
-    val baseIconSize = 24
-    val baseSelectorWidth = 24
-    val baseSelectorHeight = 2
-
-    val baseHomeIconLeft = 89
-    val baseBookmarkIconLeft = 262
-
-    val screenWidth = configuration.screenWidthDp
-    val scale = screenWidth.toFloat() / baseScreenWidth
-
-    val bottomBarHeight = (baseBottomBarHeight * scale).dp
-    val iconSize = (baseIconSize * scale).dp
-    val selectorWidth = (baseSelectorWidth * scale).dp
-    val selectorHeight = (baseSelectorHeight * scale).dp
-
-    val homeIconLeft = (baseHomeIconLeft * scale).dp
-    val bookmarkIconLeft = (baseBookmarkIconLeft * scale).dp
+    val bottomBarHeight = 64.dp
+    val iconSize = 24.dp
+    val selectorHeight = 2.dp
 
     // use Card for box-shadow effect
     Card(
@@ -90,62 +70,66 @@ fun BottomBar(
         ),
         shape = RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(bottomBarHeight),
-            contentAlignment = Alignment.TopStart
-        ) {
-            // Selector indicator
-            if (selectedTab == 0) {
-                Box(
-                    modifier = Modifier
-                        .offset(x = homeIconLeft, y = 0.dp)
-                        .width(selectorWidth)
-                        .height(selectorHeight)
-                        .background(
-                            color = PrimaryRed,
-                            shape = RoundedCornerShape(10.dp)
-                        )
-                )
-            } else if (selectedTab == 1) {
-                Box(
-                    modifier = Modifier
-                        .offset(x = bookmarkIconLeft, y = 0.dp)
-                        .width(selectorWidth)
-                        .height(selectorHeight)
-                        .background(
-                            color = PrimaryRed,
-                            shape = RoundedCornerShape(10.dp)
-                        )
-                )
-            }
+        Column(modifier = Modifier.fillMaxWidth()) {
+            // Common horizontal padding to align selector exactly above icons
+            val horizontalPadding = com.volleylord.core.ui.theme.Spacing.horizontal
 
-            Box(
+            // Selector row aligned over icons (24x2, radius 10)
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(bottomBarHeight),
-                contentAlignment = Alignment.CenterStart
+                    .padding(horizontal = horizontalPadding)
+                    .height(selectorHeight),
+                verticalAlignment = Alignment.Top
             ) {
-                // Home Icon
-                BottomBarIcon(
-                    iconActiveResId = homeIconActiveResId,
-                    iconInactiveResId = homeIconInactiveResId,
-                    isSelected = selectedTab == 0,
-                    onClick = { onTabSelected(0) },
-                    modifier = Modifier.offset(x = homeIconLeft),
-                    iconSize = iconSize
-                )
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.TopCenter) {
+                    if (selectedTab == 0) {
+                        Box(
+                            modifier = Modifier
+                                .width(24.dp)
+                                .height(selectorHeight)
+                                .background(PrimaryRed, RoundedCornerShape(10.dp))
+                        )
+                    }
+                }
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.TopCenter) {
+                    if (selectedTab == 1) {
+                        Box(
+                            modifier = Modifier
+                                .width(24.dp)
+                                .height(selectorHeight)
+                                .background(PrimaryRed, RoundedCornerShape(10.dp))
+                        )
+                    }
+                }
+            }
 
-                // Bookmarks Icon
-                BottomBarIcon(
-                    iconActiveResId = bookmarkIconActiveResId,
-                    iconInactiveResId = bookmarkIconInactiveResId,
-                    isSelected = selectedTab == 1,
-                    onClick = { onTabSelected(1) },
-                    modifier = Modifier.offset(x = bookmarkIconLeft),
-                    iconSize = iconSize
-                )
+            // Icons row (same padding to align with selector)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(bottomBarHeight - selectorHeight)
+                    .padding(horizontal = horizontalPadding),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    BottomBarIcon(
+                        iconActiveResId = homeIconActiveResId,
+                        iconInactiveResId = homeIconInactiveResId,
+                        isSelected = selectedTab == 0,
+                        onClick = { onTabSelected(0) },
+                        iconSize = iconSize
+                    )
+                }
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    BottomBarIcon(
+                        iconActiveResId = bookmarkIconActiveResId,
+                        iconInactiveResId = bookmarkIconInactiveResId,
+                        isSelected = selectedTab == 1,
+                        onClick = { onTabSelected(1) },
+                        iconSize = iconSize
+                    )
+                }
             }
         }
     }
@@ -156,10 +140,10 @@ fun BottomBar(
  *
  * @param iconActiveResId
  * @param iconInactiveResId
- * @param isSelected Whether this icon is currently selected.
+ * @param isSelected
  * @param onClick Callback when the icon is clicked.
- * @param modifier Modifier to be applied to the icon.
- * @param iconSize Size of the icon (adaptive from Figma).
+ * @param modifier
+ * @param iconSize
  */
 @Composable
 private fun BottomBarIcon(
