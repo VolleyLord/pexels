@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,7 +34,7 @@ import com.volleylord.core.ui.theme.White
  *
  * @param collections List of collections to display.
  * @param onCollectionClick Callback when a collection is clicked.
- * @param modifier Modifier to be applied to the component.
+ * @param modifier
  */
 @Composable
 fun FeaturedCollections(
@@ -41,6 +42,18 @@ fun FeaturedCollections(
   onCollectionClick: (Collection) -> Unit,
   modifier: Modifier = Modifier
 ) {
+  val originalOrder = remember(collections.map { it.id }) { collections.map { it.id } }
+  val selectedIds = collections.filter { it.isSelected }.map { it.id }.toSet()
+  val displayed = if (selectedIds.isNotEmpty()) {
+    val selected = originalOrder.filter { it in selectedIds }
+      .mapNotNull { id -> collections.find { it.id == id } }
+    val unselected = originalOrder.filter { it !in selectedIds }
+      .mapNotNull { id -> collections.find { it.id == id } }
+    selected + unselected
+  } else {
+    originalOrder.mapNotNull { id -> collections.find { it.id == id } }
+  }
+
   LazyRow(
     modifier = modifier
       .fillMaxWidth()
@@ -51,7 +64,7 @@ fun FeaturedCollections(
     )
   ) {
     items(
-      items = collections,
+      items = displayed,
       key = { it.id }
     ) { collection ->
       CollectionChip(
@@ -68,7 +81,7 @@ fun FeaturedCollections(
  *
  * @param collection The collection to display.
  * @param onClick Callback when the chip is clicked.
- * @param modifier Modifier to be applied to the chip.
+ * @param modifier
  */
 @Composable
 private fun CollectionChip(

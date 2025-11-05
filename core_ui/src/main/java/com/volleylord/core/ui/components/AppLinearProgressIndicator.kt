@@ -1,5 +1,7 @@
 package com.volleylord.core.ui.components
 
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -16,7 +18,13 @@ fun AppLinearProgressIndicator(
     modifier: Modifier = Modifier
 ) {
     LinearProgressIndicator(
-        modifier = modifier,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                top = com.volleylord.core.ui.theme.Spacing.featuredCollectionsTop,
+                start = com.volleylord.core.ui.theme.Spacing.horizontal,
+                end = com.volleylord.core.ui.theme.Spacing.horizontal
+            ),
         color = PrimaryRed,
         trackColor = LightGray
     )

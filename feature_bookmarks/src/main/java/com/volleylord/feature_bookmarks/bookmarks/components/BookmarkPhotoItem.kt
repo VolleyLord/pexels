@@ -3,6 +3,8 @@ package com.volleylord.feature_bookmarks.bookmarks.components
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,13 +14,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -35,7 +40,7 @@ import com.volleylord.core.ui.image.AsyncImageWithPlaceholder
  *
  * @param photo The photo to display.
  * @param onClick Callback invoked when the photo is clicked.
- * @param modifier The modifier for the composable.
+ * @param modifier
  */
 
 @Composable
@@ -60,7 +65,23 @@ fun BookmarkPhotoItem(
   Box(
     modifier = modifier
       .width(imageWidth)
-      .clickable(onClick = onClick)
+      .then(
+        run {
+          val interactionSource = androidx.compose.runtime.remember { MutableInteractionSource() }
+          val pressed by interactionSource.collectIsPressedAsState()
+          val scale by animateFloatAsState(
+            targetValue = if (pressed) 0.98f else 1f,
+            animationSpec = tween(durationMillis = 120),
+            label = "press_scale"
+          )
+          Modifier
+            .graphicsLayer(scaleX = scale, scaleY = scale)
+            .clickable(
+              interactionSource = interactionSource,
+              onClick = onClick
+            )
+        }
+      )
   ) {
     Card(
       modifier = Modifier
@@ -70,7 +91,7 @@ fun BookmarkPhotoItem(
     ) {
       AsyncImageWithPlaceholder(
         imageUrl = photo.tinyThumbnailUrl,
-        placeholder = ColorPainter(placeholderColor),
+        backgroundColor = placeholderColor,
         contentDescription = stringResource(
           R.string.content_description_photo_item,
           photo.photographer ?: ""
@@ -91,7 +112,7 @@ fun BookmarkPhotoItem(
           Box(modifier = Modifier.fillMaxSize()) {
               AsyncImageWithPlaceholder(
                   imageUrl = photo.tinyThumbnailUrl,
-                  placeholder = ColorPainter(placeholderColor),
+                  backgroundColor = placeholderColor,
                   contentDescription = stringResource(
                       R.string.content_description_photo_item,
                       photo.photographer ?: ""
