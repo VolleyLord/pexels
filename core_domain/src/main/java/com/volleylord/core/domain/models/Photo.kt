@@ -16,6 +16,10 @@ data class Photo(
   val tinyThumbnailUrl: String?,
   /** The URL of the full-size image. */
   val largeImageUrl: String?,
+  /** The URL of the original full-size image. */
+  val originalImageUrl: String?,
+  /** The URL of the 2x large image. */
+  val large2xImageUrl: String?,
   /** The URL to view the photo on the web. */
   val url: String?,
   /** The name of the photographer, if available. */

@@ -28,20 +28,22 @@ class GetPhotoDetailUseCaseTest {
   // Test data
   private val testPhotoId = 123
   private val dummyPhoto = Photo(
-    id = testPhotoId,
-    type = "image",
-    thumbnailUrl = "thumb.url",
-    tinyThumbnailUrl = "tiny.url",
-    largeImageUrl = "large.url",
-    url = "photo.url",
-    photographer = "John Doe",
-    photographerUrl = "photographer.url",
-    photographerId = 456L,
-    alt = "A beautiful landscape",
-    width = 1000,
-    height = 750,
-    avgColor = Color.Blue, // Using Color from compose.ui.graphics
-    liked = false
+      id = testPhotoId,
+      type = "image",
+      thumbnailUrl = "thumb.url",
+      tinyThumbnailUrl = "tiny.url",
+      largeImageUrl = "large.url",
+      url = "photo.url",
+      photographer = "John Doe",
+      photographerUrl = "photographer.url",
+      photographerId = 456L,
+      alt = "A beautiful landscape",
+      width = 1000,
+      height = 750,
+      avgColor = Color.Blue, // Using Color from compose.ui.graphics
+      liked = false,
+      originalImageUrl = "original.url",
+      large2xImageUrl = "large2x.url"
   )
 
   @Before

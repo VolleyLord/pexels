@@ -24,13 +24,18 @@ class SettingsRepositoryImpl @Inject constructor(
    * @throws java.io.IOException If there is an issue accessing the storage.
    */
   override suspend fun seedInitialApiKeyIfNeeded() {
-    val isSeedComplete = securePreferencesDataSource.isInitialSeedComplete().first()
-    if (!isSeedComplete) {
+    // If nothing is stored yet, try to seed from BuildConfig.API_KEY
+    val storedKey = securePreferencesDataSource.getApiKey().first()
+    if (storedKey.isNullOrBlank()) {
       val apiKeyFromProperties = BuildConfig.API_KEY
       if (apiKeyFromProperties.isNotBlank()) {
         saveApiKey(apiKeyFromProperties)
       }
-      // Mark as complete even if the key was blank, to prevent re-running.
+    }
+
+    // Mark seed complete only if a key is actually present
+    val finalKey = securePreferencesDataSource.getApiKey().first()
+    if (!finalKey.isNullOrBlank()) {
       securePreferencesDataSource.setInitialSeedComplete()
     }
   }

@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -73,12 +74,13 @@ fun PhotoItem(
     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
   ) {
     AsyncImageWithPlaceholder(
-      imageUrl = photo.tinyThumbnailUrl,
+      imageUrl = photo.thumbnailUrl,
       backgroundColor = placeholderColor,
       contentDescription = description,
       modifier = Modifier
         .fillMaxSize()
-        .clip(RoundedCornerShape(8.dp))
+        .clip(RoundedCornerShape(8.dp)),
+      contentScale = ContentScale.FillWidth
     )
   }
 }

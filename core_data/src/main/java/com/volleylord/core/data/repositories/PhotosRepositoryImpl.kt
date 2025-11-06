@@ -92,7 +92,10 @@ class PhotosRepositoryImpl @Inject constructor(
         if (cachedPhotoEntity == null) {
           emit(NetworkResult.Error("API key not found and no cached data available."))
         } else {
-          emit(NetworkResult.Success(mapper.mapEntityToDomain(cachedPhotoEntity)))
+          // Синхронизируем статус bookmark из БД
+          val photo = mapper.mapEntityToDomain(cachedPhotoEntity)
+          val bookmarkStatus = dao.isPhotoBookmarked(photoId) ?: false
+          emit(NetworkResult.Success(photo.copy(liked = bookmarkStatus)))
         }
         return@flow
       }
@@ -101,19 +104,26 @@ class PhotosRepositoryImpl @Inject constructor(
       val freshPhoto = mapper.mapDtoToDomain(response)
       val currentTime = System.currentTimeMillis()
 
-      dao.insertPhotos(listOf(mapper.mapDomainToEntity(freshPhoto, "", currentTime)))
+      // Сохраняем фото в БД, сохраняя текущий статус bookmark если фото уже было в БД
+      val existingBookmarkStatus = dao.isPhotoBookmarked(photoId) ?: false
+      dao.insertPhotos(listOf(mapper.mapDomainToEntity(freshPhoto, "", currentTime, isBookmarked = existingBookmarkStatus)))
 
+      // Получаем обновленное фото из БД с актуальным статусом bookmark
       val updatedPhotoEntity = dao.getPhotoById(photoId)
       if (updatedPhotoEntity != null) {
-        emit(NetworkResult.Success(mapper.mapEntityToDomain(updatedPhotoEntity)))
+        val photo = mapper.mapEntityToDomain(updatedPhotoEntity)
+        emit(NetworkResult.Success(photo))
       } else {
-        emit(NetworkResult.Success(freshPhoto))
+        emit(NetworkResult.Success(freshPhoto.copy(liked = existingBookmarkStatus)))
       }
     } catch (e: Exception) {
       if (cachedPhotoEntity == null) {
         emit(NetworkResult.Error(e.message ?: "Unknown error occurred"))
       } else {
-        emit(NetworkResult.Success(mapper.mapEntityToDomain(cachedPhotoEntity)))
+        // Синхронизируем статус bookmark из БД
+        val photo = mapper.mapEntityToDomain(cachedPhotoEntity)
+        val bookmarkStatus = dao.isPhotoBookmarked(photoId) ?: false
+        emit(NetworkResult.Success(photo.copy(liked = bookmarkStatus)))
       }
     }
   }
@@ -142,32 +152,43 @@ class PhotosRepositoryImpl @Inject constructor(
    * @param isBookmarked Whether the photo should be bookmarked.
    */
   override suspend fun toggleBookmark(photoId: Int, isBookmarked: Boolean) {
-    dao.updateBookmarkStatus(photoId, isBookmarked)
+    android.util.Log.d("PhotosRepository", "Toggle bookmark called - photoId: $photoId, isBookmarked: $isBookmarked")
     
-    // If bookmarking, ensure the photo exists in the database
-    // If it doesn't exist, we need to fetch it from API first
-    if (isBookmarked) {
-      val existingPhoto = dao.getPhotoById(photoId)
-      if (existingPhoto == null) {
-        // Photo doesn't exist, need to fetch from API first
-        try {
-          val apiKey = settingsRepository.getApiKey()?.value
-          if (!apiKey.isNullOrBlank()) {
-            val response = api.getPhoto(apiKey = apiKey, id = photoId)
-            val photo = mapper.mapDtoToDomain(response)
-            val currentTime = System.currentTimeMillis()
-            dao.insertPhotos(
-              listOf(mapper.mapDomainToEntity(photo, "", currentTime, isBookmarked = true))
-            )
-          }
-        } catch (e: Exception) {
-          // If API fetch fails, just update the bookmark status if photo exists
-          e.printStackTrace()
+    // Сначала проверяем, существует ли фото в БД
+    val existingPhoto = dao.getPhotoById(photoId)
+    
+    if (existingPhoto == null && isBookmarked) {
+      // Фото не существует, но мы хотим его добавить в bookmarks
+      // Нужно сначала получить фото из API
+      try {
+        val apiKey = settingsRepository.getApiKey()?.value
+        if (!apiKey.isNullOrBlank()) {
+          val response = api.getPhoto(apiKey = apiKey, id = photoId)
+          val photo = mapper.mapDtoToDomain(response)
+          val currentTime = System.currentTimeMillis()
+          dao.insertPhotos(
+            listOf(mapper.mapDomainToEntity(photo, "", currentTime, isBookmarked = true))
+          )
         }
-      } else {
-        // Photo exists, just update bookmark status
-        dao.updateBookmarkStatus(photoId, true)
+      } catch (e: Exception) {
+        e.printStackTrace()
+        // Если не удалось получить фото из API, не можем добавить в bookmarks
+        return
       }
+    } else if (existingPhoto != null) {
+      // Фото существует, обновляем статус bookmark
+      android.util.Log.d("PhotosRepository", "Updating bookmark status in database for photoId: $photoId")
+      dao.updateBookmarkStatus(photoId, isBookmarked)
+      android.util.Log.d("PhotosRepository", "Bookmark status updated successfully")
+      
+      // Проверяем, что изменения применились
+      val updatedPhoto = dao.getPhotoById(photoId)
+      val actualBookmarkStatus = dao.isPhotoBookmarked(photoId)
+      val totalBookmarksCount = dao.getBookmarkedPhotosCount()
+      android.util.Log.d("PhotosRepository", "Verification after update - photo exists: ${updatedPhoto != null}, isBookmarked: $actualBookmarkStatus, total bookmarks in DB: $totalBookmarksCount")
+    } else {
+      android.util.Log.d("PhotosRepository", "Photo not found in DB and not bookmarking - nothing to do")
     }
+    // Если existingPhoto == null && !isBookmarked - ничего не делаем, так как фото не в БД
   }
 }

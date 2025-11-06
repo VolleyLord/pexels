@@ -28,21 +28,37 @@ class BookmarksPagingSource(
       val limit = params.loadSize
       val offset = page * limit
 
-      val photos = photoDao.getBookmarkedPhotos(limit, offset)
-        .map { photoMapper.mapEntityToDomain(it) }
+      android.util.Log.d("BookmarksPagingSource", "Loading bookmarks - page: $page, offset: $offset, limit: $limit")
+      
+      // Проверяем общее количество закладок в БД для диагностики
+      val totalCount = photoDao.getBookmarkedPhotosCount()
+      android.util.Log.d("BookmarksPagingSource", "Total bookmarked photos in DB: $totalCount")
 
-      val nextKey = if (photos.size < limit) {
+      val photos = photoDao.getBookmarkedPhotos(limit, offset)
+      android.util.Log.d("BookmarksPagingSource", "Raw photos from DB query: ${photos.size}")
+      
+      val mappedPhotos = photos.map { photoMapper.mapEntityToDomain(it) }
+
+      android.util.Log.d("BookmarksPagingSource", "Loaded ${mappedPhotos.size} bookmarked photos from database")
+      if (mappedPhotos.isNotEmpty()) {
+        android.util.Log.d("BookmarksPagingSource", "First photo ID: ${mappedPhotos.first().id}, Last photo ID: ${mappedPhotos.last().id}")
+      } else {
+        android.util.Log.w("BookmarksPagingSource", "WARNING: No photos loaded! Total count in DB: $totalCount, but query returned 0")
+      }
+
+      val nextKey = if (mappedPhotos.size < limit) {
         null // Last page
       } else {
         page + 1
       }
 
       LoadResult.Page(
-        data = photos,
+        data = mappedPhotos,
         prevKey = if (page == 0) null else page - 1,
         nextKey = nextKey
       )
     } catch (exception: Exception) {
+      android.util.Log.e("BookmarksPagingSource", "Error loading bookmarks", exception)
       LoadResult.Error(exception)
     }
   }

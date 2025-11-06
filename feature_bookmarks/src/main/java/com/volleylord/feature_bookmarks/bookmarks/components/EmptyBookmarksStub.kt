@@ -5,18 +5,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.volleylord.common.R
@@ -37,40 +34,27 @@ fun EmptyBookmarksStub(
   onExploreClick: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  val configuration = LocalConfiguration.current
-  val baseScreenWidth = 375
-  val screenWidth = configuration.screenWidthDp
-  val scale = screenWidth.toFloat() / baseScreenWidth
-
-  val containerWidth = (203 * scale).dp
-  // val titleTop = (380 * scale).dp.toInt()
-    val titleTop = with(LocalDensity.current) { (380 * scale).dp.toPx().toInt() }
-    val buttonTop = with(LocalDensity.current) { (410 * scale).dp.toPx().toInt() }
-    // val buttonTop = (410 * scale).dp.toInt()
-
   Box(
     modifier = modifier.fillMaxSize(),
     contentAlignment = Alignment.Center
   ) {
     Column(
-      modifier = Modifier.width(containerWidth),
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
       Text(
         text = stringResource(R.string.bookmarks_empty_title),
-        fontSize = (14 * scale).sp,
+        fontSize = 14.sp,
         fontWeight = FontWeight.Normal,
         color = Color(0xFF333333),
         textAlign = TextAlign.Center,
         modifier = Modifier
-          .width(containerWidth)
-          .padding(bottom = 8.dp)
+          .padding(bottom = 12.dp)
       )
 
       // Explore button
       Text(
         text = stringResource(R.string.bookmarks_empty_explore),
-        fontSize = (18 * scale).sp,
+        fontSize = 18.sp,
         fontWeight = FontWeight.Bold,
         color = PrimaryRed,
         textAlign = TextAlign.Center,
