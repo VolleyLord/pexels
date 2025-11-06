@@ -45,113 +45,112 @@ import com.volleylord.core.ui.image.AsyncImageWithPlaceholder
 
 @Composable
 fun BookmarkPhotoItem(
-  photo: Photo,
-  onClick: () -> Unit,
-  modifier: Modifier = Modifier
+    photo: Photo,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-  val configuration = LocalConfiguration.current
-  val baseScreenWidth = 375
-  val screenWidth = configuration.screenWidthDp
-  val scale = screenWidth.toFloat() / baseScreenWidth
+    val configuration = LocalConfiguration.current
+    val baseScreenWidth = 375
+    val screenWidth = configuration.screenWidthDp
+    val scale = screenWidth.toFloat() / baseScreenWidth
 
-  val imageWidth = (155 * scale).dp
-  val authorHeight = (33 * scale).dp
-  val authorPadding = 6.dp
-  val cornerRadius = 8.dp
+    val imageWidth = (155 * scale).dp
+    val authorHeight = (33 * scale).dp
+    val authorPadding = 6.dp
+    val cornerRadius = 8.dp
 
-  val placeholderColor = photo.avgColor ?: Color.LightGray
-  // Aspect ratio is controlled by parent grid for consistent rows
+    val placeholderColor = photo.avgColor ?: Color.LightGray
+    // Aspect ratio is controlled by parent grid for consistent rows
 
-  Box(
-    modifier = modifier
-      .width(imageWidth)
-      .then(
-        run {
-          val interactionSource = androidx.compose.runtime.remember { MutableInteractionSource() }
-          val pressed by interactionSource.collectIsPressedAsState()
-          val scale by animateFloatAsState(
-            targetValue = if (pressed) 0.98f else 1f,
-            animationSpec = tween(durationMillis = 120),
-            label = "press_scale"
-          )
-          Modifier
-            .graphicsLayer(scaleX = scale, scaleY = scale)
-            .clickable(
-              interactionSource = interactionSource,
-              onClick = onClick
+    Box(
+        modifier = modifier
+            .width(imageWidth)
+            .then(
+                run {
+                    val interactionSource = androidx.compose.runtime.remember { MutableInteractionSource() }
+                    val pressed by interactionSource.collectIsPressedAsState()
+                    val scale by animateFloatAsState(
+                        targetValue = if (pressed) 0.98f else 1f,
+                        animationSpec = tween(durationMillis = 120),
+                        label = "press_scale"
+                    )
+                    Modifier
+                        .graphicsLayer(scaleX = scale, scaleY = scale)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            onClick = onClick
+                        )
+                }
+            )
+    ) {
+        Card(
+            modifier = Modifier
+                .width(imageWidth)
+                .fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            AsyncImageWithPlaceholder(
+                imageUrl = photo.thumbnailUrl,
+                backgroundColor = placeholderColor,
+                contentDescription = stringResource(
+                    R.string.content_description_photo_item,
+                    photo.photographer ?: ""
+                ),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(cornerRadius))
             )
         }
-      )
-  ) {
-    Card(
-      modifier = Modifier
-        .width(imageWidth)
-        .fillMaxWidth(),
-      elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-      AsyncImageWithPlaceholder(
-        imageUrl = photo.tinyThumbnailUrl,
-        backgroundColor = placeholderColor,
-        contentDescription = stringResource(
-          R.string.content_description_photo_item,
-          photo.photographer ?: ""
-        ),
-        modifier = Modifier
-          .fillMaxSize()
-          .clip(RoundedCornerShape(cornerRadius))
-      )
+
+        // Inside Card → Box above image
+        Card(
+            modifier = Modifier
+                .width(imageWidth),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            shape = RoundedCornerShape(cornerRadius)
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                AsyncImageWithPlaceholder(
+                    imageUrl = photo.thumbnailUrl,
+                    backgroundColor = placeholderColor,
+                    contentDescription = stringResource(
+                        R.string.content_description_photo_item,
+                        photo.photographer ?: ""
+                    ),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(cornerRadius))
+                )
+
+                //  Author overlay
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(authorHeight)
+                        .align(Alignment.BottomCenter),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Text(
+                        text = photo.photographer ?: "",
+                        fontSize = (14 * scale).sp,
+                        fontWeight = FontWeight.Normal,
+                        color = Color.White,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = Color(0x000000).copy(alpha = 0.4f),
+                                shape = RoundedCornerShape(
+                                    topStart = 0.dp, topEnd = 0.dp,
+                                    bottomStart = cornerRadius,
+                                    bottomEnd = cornerRadius
+                                )
+                            )
+                            .padding(horizontal = 8.dp, vertical = 6.dp)
+                    )
+                }
+            }
+        }
     }
-
-      // Inside Card → Box above image
-      Card(
-          modifier = Modifier
-              .width(imageWidth),
-          elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-          shape = RoundedCornerShape(cornerRadius)
-      ) {
-          Box(modifier = Modifier.fillMaxSize()) {
-              AsyncImageWithPlaceholder(
-                  imageUrl = photo.tinyThumbnailUrl,
-                  backgroundColor = placeholderColor,
-                  contentDescription = stringResource(
-                      R.string.content_description_photo_item,
-                      photo.photographer ?: ""
-                  ),
-                  modifier = Modifier
-                      .fillMaxSize()
-                      .clip(RoundedCornerShape(cornerRadius))
-              )
-
-              //  Author overlay
-              Box(
-                  modifier = Modifier
-                      .fillMaxWidth()
-                      .height(authorHeight)
-                      .align(Alignment.BottomCenter),
-                  contentAlignment = Alignment.CenterStart
-              ) {
-                  Text(
-                      text = photo.photographer ?: "",
-                      fontSize = (14 * scale).sp,
-                      fontWeight = FontWeight.Normal,
-                      color = Color.White,
-                      maxLines = 1,
-                      overflow = TextOverflow.Ellipsis,
-                      modifier = Modifier
-                          .fillMaxWidth()
-                          .background(
-                              color = Color(0x000000).copy(alpha = 0.4f),
-                              shape = RoundedCornerShape(
-                                  topStart = 0.dp, topEnd = 0.dp,
-                                  bottomStart = cornerRadius,
-                                  bottomEnd = cornerRadius
-                              )
-                          )
-                          .padding(horizontal = 8.dp, vertical = 6.dp)
-                  )
-              }
-          }
-      }
-  }
 }
-

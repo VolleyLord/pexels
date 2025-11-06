@@ -33,7 +33,7 @@ fun AsyncImageWithPlaceholder(
   backgroundColor: Color,
   contentDescription: String?,
   modifier: Modifier = Modifier,
-  contentScale: ContentScale = ContentScale.Crop
+  contentScale: ContentScale = ContentScale.FillWidth
 ) {
   val context = LocalContext.current
   val placeholderIconResId = context.resources.getIdentifier("placeholder_icon", "drawable", context.packageName)

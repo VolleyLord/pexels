@@ -30,6 +30,10 @@ data class PhotoEntity(
   val tinyThumbnailUrl: String?,
   /** The URL of the full-size image, if available. */
   val largeImageUrl: String?,
+  /** The URL of the original full-size image, if available. */
+  val originalImageUrl: String?,
+  /** The URL of the 2x large image, if available. */
+  val large2xImageUrl: String?,
   /** The alternative text description for accessibility, if available. */
   val alt: String?,
   /** Timestamp when the photo was cached (in milliseconds since epoch). */

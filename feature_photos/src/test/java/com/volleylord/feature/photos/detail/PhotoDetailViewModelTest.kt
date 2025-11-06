@@ -5,8 +5,8 @@ import app.cash.turbine.test
 import com.volleylord.core.core.network.NetworkResult
 import com.volleylord.core.domain.models.Photo
 import com.volleylord.core.domain.usecases.photos.GetPhotoDetailUseCase
-import com.volleylord.feature.photos.photos.detail.PhotoDetailUiState
-import com.volleylord.feature.photos.photos.detail.PhotoDetailViewModel
+import com.volleylord.feature.photos.presentation.details.PhotoDetailUiState
+import com.volleylord.feature.photos.presentation.details.PhotoDetailViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf

@@ -50,6 +50,8 @@ class PhotoMapper @Inject constructor() {
       thumbnailUrl = dto.src?.medium,
       tinyThumbnailUrl = dto.src?.tiny,
       largeImageUrl = dto.src?.large,
+      originalImageUrl = dto.src?.original,
+      large2xImageUrl = dto.src?.large2x,
       liked = dto.liked,
       alt = dto.alt
     )
@@ -75,6 +77,8 @@ class PhotoMapper @Inject constructor() {
       thumbnailUrl = entity.thumbnailUrl,
       tinyThumbnailUrl = entity.tinyThumbnailUrl,
       largeImageUrl = entity.largeImageUrl,
+      originalImageUrl = entity.originalImageUrl,
+      large2xImageUrl = entity.large2xImageUrl,
       liked = entity.isBookmarked, // Map isBookmarked to liked
       alt = entity.alt
     )
@@ -106,6 +110,8 @@ class PhotoMapper @Inject constructor() {
       thumbnailUrl = domain.thumbnailUrl,
       tinyThumbnailUrl = domain.tinyThumbnailUrl,
       largeImageUrl = domain.largeImageUrl,
+      originalImageUrl = domain.originalImageUrl,
+      large2xImageUrl = domain.large2xImageUrl,
       alt = domain.alt,
       queryType = queryType,
       cachedAt = cachedAt,

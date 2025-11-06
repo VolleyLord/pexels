@@ -152,11 +152,11 @@ private fun PhotoDetailSuccess(
     val topBarTop = 61.dp
     val topBarHeight = 40.dp
     val backBtnSize = 40.dp
-    val titleInset = 57.dp // 121 - 24 - 40
+    val titleInset = 57.dp
     val titleFontSize = 18.sp
-    val imageTopSpacer = 29.dp // 130 - (61 + 40)
+    val imageTopSpacer = 29.dp
     val imageHeight = 586.dp
-    val actionsTopSpacer = 24.dp // 740 - (130 + 586)
+    val actionsTopSpacer = 24.dp
     val actionsHeight = 48.dp
     val downloadWidth = 180.dp
     val bookmarkSize = 48.dp
@@ -180,7 +180,7 @@ private fun PhotoDetailSuccess(
         Spacer(modifier = Modifier.height(imageTopSpacer))
 
         DetailsPhotoZoom(
-            imageUrl = photo.largeImageUrl ?: photo.thumbnailUrl,
+            imageUrl = photo.originalImageUrl ?: photo.large2xImageUrl ?: photo.largeImageUrl ?: photo.thumbnailUrl,
             modifier = Modifier,
             fixedHeightDp = imageHeight.value.toInt(),
             cornerRadiusDp = 24,

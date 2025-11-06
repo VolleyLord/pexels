@@ -40,22 +40,23 @@ fun AppNavigation(startDestination: AppDestination) {
       )
     }
 
-    composable<BookmarksDestination> {
+    composable<BookmarksDestination> { backStackEntry ->
       BookmarksScreen(
         viewModel = hiltViewModel(),
+        navBackStackEntryId = backStackEntry.id,
         onPhotoClick = { photoId ->
           navController.navigate(PhotoDetailDestination(photoId, isFromBookmarks = true))
         },
         onExploreClick = {
           navController.navigate(PhotoListDestination) {
-            popUpTo(BookmarksDestination) { saveState = true }
+            popUpTo(PhotoListDestination) { saveState = true }
             launchSingleTop = true
             restoreState = true
           }
         },
         onNavigateToHome = {
           navController.navigate(PhotoListDestination) {
-            popUpTo(BookmarksDestination) { saveState = true }
+            popUpTo(PhotoListDestination) { saveState = true }
             launchSingleTop = true
             restoreState = true
           }

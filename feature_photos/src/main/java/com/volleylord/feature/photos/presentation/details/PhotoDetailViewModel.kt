@@ -46,8 +46,13 @@ class PhotoDetailViewModel @Inject constructor(
         viewModelScope.launch {
             val newBookmarkStatus = !(photo.liked ?: false)
             toggleBookmarkUseCase(photo.id, newBookmarkStatus)
-            val updatedPhoto = photo.copy(liked = newBookmarkStatus)
-            _uiState.value = PhotoDetailUiState.Success(updatedPhoto)
+            
+            // update local state without refreshing screen
+            val currentState = _uiState.value
+            if (currentState is PhotoDetailUiState.Success) {
+                val updatedPhoto = photo.copy(liked = newBookmarkStatus)
+                _uiState.value = PhotoDetailUiState.Success(updatedPhoto)
+            }
         }
     }
 }

@@ -15,8 +15,13 @@ class BookmarksViewModel @Inject constructor(
   private val getBookmarksUseCase: GetBookmarksUseCase
 ) : ViewModel() {
 
+  init {
+    
+  }
+
   val bookmarks: Flow<PagingData<Photo>> = getBookmarksUseCase()
     .cachedIn(viewModelScope)
+    
 }
 
 
