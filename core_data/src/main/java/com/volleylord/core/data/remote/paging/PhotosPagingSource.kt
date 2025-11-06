@@ -53,11 +53,22 @@ class PhotosPagingSource(
       // Save to cache with queryType = "" for curated photos
       // Only save first page to cache (limit to 30 photos for curated)
       if (page == 1) {
-        // Clear old curated cache only after successful load
+        // Clear old curated cache only after successful load (but keep bookmarks)
         photoDao.clearCacheForQuery(QUERY_TYPE_CURATED)
+
+        // Preserve bookmark flags when writing cache
+        val bookmarkedIds = photoDao.getBookmarkedIds().toHashSet()
         val photosToCache = photos.take(30) // Cache only first 30 curated photos
         photoDao.insertPhotos(
-          photosToCache.map { photoMapper.mapDomainToEntity(it, QUERY_TYPE_CURATED, currentTime) }
+          photosToCache.map {
+            val isBookmarked = it.id in bookmarkedIds
+            photoMapper.mapDomainToEntity(
+              domain = it,
+              queryType = QUERY_TYPE_CURATED,
+              cachedAt = currentTime,
+              isBookmarked = isBookmarked
+            )
+          }
         )
       }
 

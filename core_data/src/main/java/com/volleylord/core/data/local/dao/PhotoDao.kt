@@ -94,7 +94,9 @@ interface PhotoDao {
    *
    * @param queryType The query type to clear cache for.
    */
-  @Query("DELETE FROM photos WHERE queryType = :queryType")
+ // @Query("DELETE FROM photos WHERE queryType = :queryType")
+
+  @Query("DELETE FROM photos WHERE queryType = :queryType AND isBookmarked = 0")
   suspend fun clearCacheForQuery(queryType: String)
 
   /**
@@ -115,6 +117,12 @@ interface PhotoDao {
    */
   @Query("SELECT COUNT(*) FROM photos WHERE isBookmarked = 1")
   suspend fun getBookmarkedPhotosCount(): Int
+
+  /**
+   * Returns IDs of all bookmarked photos to preserve bookmark flags on cache writes.
+   */
+  @Query("SELECT id FROM photos WHERE isBookmarked = 1")
+  suspend fun getBookmarkedIds(): List<Int>
 
   /**
    * Checks if a photo is bookmarked.
