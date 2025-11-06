@@ -52,11 +52,21 @@ class SearchPhotosPagingSource(
       // Cache search results with query as queryType
       // Only save first page to cache (limit to 30 photos per query)
       if (page == 1) {
-        // Clear old cache for this query only after successful load
+        // Clear old cache for this query only after successful load (but keep bookmarks)
         photoDao.clearCacheForQuery(query)
+
+        // Preserve bookmark flags when writing cache
+        val bookmarkedIds = photoDao.getBookmarkedIds().toHashSet()
         val photosToCache = photos.take(30) // Cache only first 30 photos per query
         photoDao.insertPhotos(
-          photosToCache.map { photoMapper.mapDomainToEntity(it, query, currentTime) }
+          photosToCache.map {
+            photoMapper.mapDomainToEntity(
+              domain = it,
+              queryType = query,
+              cachedAt = currentTime,
+              isBookmarked = it.id in bookmarkedIds
+            )
+          }
         )
       }
 
