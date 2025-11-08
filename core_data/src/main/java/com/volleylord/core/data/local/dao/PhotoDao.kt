@@ -18,7 +18,7 @@ interface PhotoDao {
    *
    * @param photos The list of [PhotoEntity] objects to insert.
    */
-  @Insert(onConflict = OnConflictStrategy.Companion.REPLACE)
+  @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun insertPhotos(photos: List<PhotoEntity>)
 
   /**
@@ -82,7 +82,7 @@ interface PhotoDao {
    */
   @Query("""
     DELETE FROM photos 
-    WHERE cachedAt <= (:currentTime - :cacheValidityMillis)
+    WHERE cachedAt <= (:currentTime - :cacheValidityMillis) AND isBookmarked = 0
   """)
   suspend fun clearExpiredCache(
     currentTime: Long,
@@ -94,7 +94,6 @@ interface PhotoDao {
    *
    * @param queryType The query type to clear cache for.
    */
- // @Query("DELETE FROM photos WHERE queryType = :queryType")
 
   @Query("DELETE FROM photos WHERE queryType = :queryType AND isBookmarked = 0")
   suspend fun clearCacheForQuery(queryType: String)

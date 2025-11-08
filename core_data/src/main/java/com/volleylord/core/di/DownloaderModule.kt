@@ -13,6 +13,7 @@ import javax.inject.Singleton
 abstract class DownloaderModule {
   @Binds
   @Singleton
+  @Suppress("unused")
   abstract fun bindPhotoDownloader(impl: DefaultPhotoDownloader): PhotoDownloader
 }
 

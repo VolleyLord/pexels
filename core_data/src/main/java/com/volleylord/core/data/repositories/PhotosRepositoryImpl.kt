@@ -92,7 +92,7 @@ class PhotosRepositoryImpl @Inject constructor(
         if (cachedPhotoEntity == null) {
           emit(NetworkResult.Error("API key not found and no cached data available."))
         } else {
-          // Синхронизируем статус bookmark из БД
+            // sync bookmarks status from db
           val photo = mapper.mapEntityToDomain(cachedPhotoEntity)
           val bookmarkStatus = dao.isPhotoBookmarked(photoId) ?: false
           emit(NetworkResult.Success(photo.copy(liked = bookmarkStatus)))
@@ -104,11 +104,21 @@ class PhotosRepositoryImpl @Inject constructor(
       val freshPhoto = mapper.mapDtoToDomain(response)
       val currentTime = System.currentTimeMillis()
 
-      // Сохраняем фото в БД, сохраняя текущий статус bookmark если фото уже было в БД
       val existingBookmarkStatus = dao.isPhotoBookmarked(photoId) ?: false
-      dao.insertPhotos(listOf(mapper.mapDomainToEntity(freshPhoto, "", currentTime, isBookmarked = existingBookmarkStatus)))
+        val existingPhoto = dao.getPhotoById(photoId)
+        val previousQueryType = existingPhoto?.queryType ?: ""
+        val previousCachedAt = existingPhoto?.cachedAt ?: currentTime
+        dao.insertPhotos(
+            listOf(
+                mapper.mapDomainToEntity(
+                    freshPhoto,
+                    queryType = previousQueryType,
+                    cachedAt = previousCachedAt,
+                    isBookmarked = existingBookmarkStatus
+                )
+            )
+        )
 
-      // Получаем обновленное фото из БД с актуальным статусом bookmark
       val updatedPhotoEntity = dao.getPhotoById(photoId)
       if (updatedPhotoEntity != null) {
         val photo = mapper.mapEntityToDomain(updatedPhotoEntity)
@@ -120,7 +130,7 @@ class PhotosRepositoryImpl @Inject constructor(
       if (cachedPhotoEntity == null) {
         emit(NetworkResult.Error(e.message ?: "Unknown error occurred"))
       } else {
-        // Синхронизируем статус bookmark из БД
+        // sync bookmarks status from db
         val photo = mapper.mapEntityToDomain(cachedPhotoEntity)
         val bookmarkStatus = dao.isPhotoBookmarked(photoId) ?: false
         emit(NetworkResult.Success(photo.copy(liked = bookmarkStatus)))
@@ -152,14 +162,11 @@ class PhotosRepositoryImpl @Inject constructor(
    * @param isBookmarked Whether the photo should be bookmarked.
    */
   override suspend fun toggleBookmark(photoId: Int, isBookmarked: Boolean) {
-    android.util.Log.d("PhotosRepository", "Toggle bookmark called - photoId: $photoId, isBookmarked: $isBookmarked")
-    
-    // Сначала проверяем, существует ли фото в БД
+    // check for existence in db
     val existingPhoto = dao.getPhotoById(photoId)
     
     if (existingPhoto == null && isBookmarked) {
-      // Фото не существует, но мы хотим его добавить в bookmarks
-      // Нужно сначала получить фото из API
+      // if not in db, fetch it form api
       try {
         val apiKey = settingsRepository.getApiKey()?.value
         if (!apiKey.isNullOrBlank()) {
@@ -172,23 +179,11 @@ class PhotosRepositoryImpl @Inject constructor(
         }
       } catch (e: Exception) {
         e.printStackTrace()
-        // Если не удалось получить фото из API, не можем добавить в bookmarks
         return
       }
     } else if (existingPhoto != null) {
-      // Фото существует, обновляем статус bookmark
-      android.util.Log.d("PhotosRepository", "Updating bookmark status in database for photoId: $photoId")
-      dao.updateBookmarkStatus(photoId, isBookmarked)
-      android.util.Log.d("PhotosRepository", "Bookmark status updated successfully")
-      
-      // Проверяем, что изменения применились
-      val updatedPhoto = dao.getPhotoById(photoId)
-      val actualBookmarkStatus = dao.isPhotoBookmarked(photoId)
-      val totalBookmarksCount = dao.getBookmarkedPhotosCount()
-      android.util.Log.d("PhotosRepository", "Verification after update - photo exists: ${updatedPhoto != null}, isBookmarked: $actualBookmarkStatus, total bookmarks in DB: $totalBookmarksCount")
-    } else {
-      android.util.Log.d("PhotosRepository", "Photo not found in DB and not bookmarking - nothing to do")
+        // image exists, toggle bookmarks status
+        dao.updateBookmarkStatus(photoId, isBookmarked)
     }
-    // Если existingPhoto == null && !isBookmarked - ничего не делаем, так как фото не в БД
   }
 }

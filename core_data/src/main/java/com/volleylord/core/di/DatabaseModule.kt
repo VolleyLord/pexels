@@ -25,9 +25,9 @@ object DatabaseModule {
    * Migration from version 1 to 2: Add cachedAt and queryType columns.
    */
   private val MIGRATION_1_2 = object : Migration(1, 2) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-      database.execSQL("ALTER TABLE photos ADD COLUMN cachedAt INTEGER NOT NULL DEFAULT ${System.currentTimeMillis()}")
-      database.execSQL("ALTER TABLE photos ADD COLUMN queryType TEXT NOT NULL DEFAULT ''")
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL("ALTER TABLE photos ADD COLUMN cachedAt INTEGER NOT NULL DEFAULT ${System.currentTimeMillis()}")
+      db.execSQL("ALTER TABLE photos ADD COLUMN queryType TEXT NOT NULL DEFAULT ''")
     }
   }
 
@@ -35,8 +35,8 @@ object DatabaseModule {
    * Migration from version 2 to 3: Add isBookmarked column.
    */
   private val MIGRATION_2_3 = object : Migration(2, 3) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-      database.execSQL("ALTER TABLE photos ADD COLUMN isBookmarked INTEGER NOT NULL DEFAULT 0")
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL("ALTER TABLE photos ADD COLUMN isBookmarked INTEGER NOT NULL DEFAULT 0")
     }
   }
 
@@ -44,9 +44,9 @@ object DatabaseModule {
    * Migration from version 3 to 4: Add originalImageUrl and large2xImageUrl columns.
    */
   private val MIGRATION_3_4 = object : Migration(3, 4) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-      database.execSQL("ALTER TABLE photos ADD COLUMN originalImageUrl TEXT")
-      database.execSQL("ALTER TABLE photos ADD COLUMN large2xImageUrl TEXT")
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL("ALTER TABLE photos ADD COLUMN originalImageUrl TEXT")
+      db.execSQL("ALTER TABLE photos ADD COLUMN large2xImageUrl TEXT")
     }
   }
 
@@ -60,12 +60,12 @@ object DatabaseModule {
   @Singleton
   fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
     return Room.databaseBuilder(
-      context,
-      AppDatabase::class.java,
-      "photos_database"
+        context,
+        AppDatabase::class.java,
+        "photos_database"
     )
-      .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
-      .fallbackToDestructiveMigration() // For development only - remove in production
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+        .fallbackToDestructiveMigration(false) // For development only - remove in production
       .build()
   }
 
