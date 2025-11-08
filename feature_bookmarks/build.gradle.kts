@@ -46,6 +46,7 @@ dependencies {
     implementation(project(":core_domain"))
     implementation(project(":core_data"))
     implementation(project(":core_ui"))
+    implementation(project(":feature_photos"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BookmarksViewModel @Inject constructor(
-  private val getBookmarksUseCase: GetBookmarksUseCase
+  getBookmarksUseCase: GetBookmarksUseCase
 ) : ViewModel() {
   val bookmarks: Flow<PagingData<Photo>> = getBookmarksUseCase()
     .cachedIn(viewModelScope)

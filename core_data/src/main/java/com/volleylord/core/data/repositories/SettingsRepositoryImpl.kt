@@ -72,7 +72,7 @@ class SettingsRepositoryImpl @Inject constructor(
     return try {
       val apiKeyValue = securePreferencesDataSource.getApiKey().first()
       apiKeyValue?.let { ApiKey(it) }
-    } catch (e: Exception) {
+    } catch (_: Exception) {
       // If we can't decrypt or retrieve the key, return null
       null
     }
