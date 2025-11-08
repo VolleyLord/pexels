@@ -32,7 +32,7 @@ import com.volleylord.feature.photos.presentation.home.components.HomeHeader
 import com.volleylord.feature.photos.presentation.home.components.toPagingTag
 import com.volleylord.feature.photos.presentation.home.utils.rememberBottomBarVisibilityOnScroll
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun PhotoListScreen(
     viewModel: PhotoListViewModel,
@@ -170,34 +170,20 @@ private fun PhotoListContent(
         ) {
             val isLoading = lazyPagingItems.loadState.refresh is LoadState.Loading
             val isSearching = uiState.searchQuery.isNotEmpty()
-            val showHeaders = !isSearching || (isNetworkError && lazyPagingItems.itemCount == 0)
+            val showBelowFeatured = isLoading && !isSearching
+            HomeHeader(
+                query = uiState.searchQuery,
+                onQueryChange = onSearchQueryChange,
+                onSearch = { if (uiState.searchQuery.isNotEmpty()) onSearchQueryChange(uiState.searchQuery) },
+                searchIconResId = if (searchIconResId != 0) searchIconResId else android.R.drawable.ic_menu_search,
+                featuredCollections = uiState.featuredCollections,
+                onCollectionClick = onCollectionClick,
+                showTopProgress = isLoading && isSearching,
+                showBelowFeaturedProgress = showBelowFeatured,
+                isLandscape = isLandscape
+            )
 
-            if (showHeaders) {
-                HomeHeader(
-                    query = uiState.searchQuery,
-                    onQueryChange = onSearchQueryChange,
-                    onSearch = { if (uiState.searchQuery.isNotEmpty()) onSearchQueryChange(uiState.searchQuery) },
-                    searchIconResId = if (searchIconResId != 0) searchIconResId else android.R.drawable.ic_menu_search,
-                    featuredCollections = uiState.featuredCollections,
-                    onCollectionClick = onCollectionClick,
-                    showTopProgress = isLoading && isSearching,
-                    showBelowFeaturedProgress = isLoading && !isSearching,
-                    isLandscape = isLandscape
-                )
-            } else {
-                // when searching, show only searchBar (no headers)
-                HomeHeader(
-                    query = uiState.searchQuery,
-                    onQueryChange = onSearchQueryChange,
-                    onSearch = { if (uiState.searchQuery.isNotEmpty()) onSearchQueryChange(uiState.searchQuery) },
-                    searchIconResId = if (searchIconResId != 0) searchIconResId else android.R.drawable.ic_menu_search,
-                    featuredCollections = emptyList(),
-                    onCollectionClick = {},
-                    showTopProgress = isLoading && isSearching,
-                    showBelowFeaturedProgress = false,
-                    isLandscape = isLandscape
-                )
-            }
+
 
             val pagingTag = toPagingTag(pagingState)
             HomeContent(
