@@ -92,7 +92,7 @@ fun HomePhotoGrid(
             .aspectRatio(155f/170f)
             .shimmerEffect(120.dp),
           elevation = androidx.compose.material3.CardDefaults.cardElevation(defaultElevation = 4.dp),
-          shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+          shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp)
         ) {
             Box(modifier = Modifier.fillMaxSize())
         }

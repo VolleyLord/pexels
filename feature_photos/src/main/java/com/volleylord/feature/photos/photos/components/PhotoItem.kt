@@ -1,10 +1,12 @@
 package com.volleylord.feature.photos.photos.components
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,6 +24,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.volleylord.common.R
 import com.volleylord.core.domain.models.Photo
@@ -38,7 +41,9 @@ import com.volleylord.core.ui.image.AsyncImageWithPlaceholder
 fun PhotoItem(
   photo: Photo,
   onClick: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  cornerRadius: Dp = 20.dp,
+  overlayContent: (@Composable BoxScope.() -> Unit)? = null
 ) {
   val placeholderColor = photo.avgColor ?: Color.LightGray
   val description = photo.alt ?: stringResource(
@@ -71,16 +76,27 @@ fun PhotoItem(
         contentDescription = description
         role = Role.Image
       },
-    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+    shape = RoundedCornerShape(cornerRadius)
   ) {
-    AsyncImageWithPlaceholder(
-      imageUrl = photo.thumbnailUrl,
-      backgroundColor = placeholderColor,
-      contentDescription = description,
-      modifier = Modifier
-        .fillMaxSize()
-        .clip(RoundedCornerShape(8.dp)),
-      contentScale = ContentScale.FillWidth
-    )
+    Box(modifier = Modifier.fillMaxSize()) {
+      AsyncImageWithPlaceholder(
+        imageUrl = photo.thumbnailUrl,
+        backgroundColor = placeholderColor,
+        contentDescription = description,
+        modifier = Modifier
+          .fillMaxSize()
+          .clip(RoundedCornerShape(cornerRadius)),
+        contentScale = ContentScale.FillWidth
+      )
+
+      overlayContent?.let { content ->
+        Box(
+          modifier = Modifier
+            .fillMaxSize(),
+          content = content
+        )
+      }
+    }
   }
 }

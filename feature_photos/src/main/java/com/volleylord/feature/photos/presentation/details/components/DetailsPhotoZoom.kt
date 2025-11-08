@@ -67,13 +67,11 @@ fun DetailsPhotoZoom(
           // first touch
           awaitFirstDown(requireUnconsumed = false)
           var active = true
-          isGestureActive = false
-          do {
+            do {
             val event = awaitPointerEvent()
             val pressed = event.changes.count { it.pressed }
             if (pressed >= 2) {
-              isGestureActive = true
-              val zoomChange = event.calculateZoom()
+                val zoomChange = event.calculateZoom()
               val panChange = event.calculatePan()
 
               val newScale = (scale * zoomChange).coerceIn(1f, 3f)
@@ -112,9 +110,7 @@ fun DetailsPhotoZoom(
             }
           } while (active)
 
-          isGestureActive = false
-          scale = 1f
-          offsetX = 0f
+            offsetX = 0f
           offsetY = 0f
         }
       }
@@ -132,7 +128,7 @@ fun DetailsPhotoZoom(
           translationX = offsetX,
           translationY = offsetY
         ),
-      contentScale = ContentScale.Fit,
+      contentScale = ContentScale.FillWidth,
       loading = {
         Box(
           modifier = Modifier
@@ -147,5 +143,3 @@ fun DetailsPhotoZoom(
     )
   }
 }
-
-
